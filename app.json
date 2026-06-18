@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "PropFirmGuardian",
+    "name": "PropFirm Guardian",
     "slug": "PropFirmGuardian",
-    "version": "1.0.0",
+    "version": "2.1.0",
+    "description": "Professional risk management calculator for prop firm traders",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,6 +17,9 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.giftobey.propfirmguardian",
+      "versionCode": 4,
+      "permissions": ["NOTIFICATIONS", "VIBRATE", "RECEIVE_BOOT_COMPLETED"],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -25,6 +29,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b7310a70-0c26-465d-b1eb-8e0fdeaa8c44"
+      }
+    },
+    "owner": "ajviral"
   }
 }
