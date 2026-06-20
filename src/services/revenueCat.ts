@@ -11,7 +11,7 @@ import { LIVE_SERVER_HTTPS } from '../utils/tokenUtils';
 
 const REVENUECAT_API_KEY = __DEV__
   ? 'test_PqHgolMJHuZdrHtcOfdEWRxoQeb'
-  : 'PRODUCTION_KEY_PLACEHOLDER';
+  : 'goog_vekYzdfTrVgbhEKhRaWqxKupDSS';
 
 /** Entitlement identifier configured in the RevenueCat dashboard. */
 const PRO_ENTITLEMENT_ID = 'PropFirm Guardian Pro';
