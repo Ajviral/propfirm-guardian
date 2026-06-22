@@ -92,13 +92,12 @@ export default function SettingsScreen({ navigation }: Props) {
   };
 
   const onCloudBackupChange = (value: boolean) => {
-    if (value && !settings.cloudBackupEnabled) {
+    if (value && !isPro) {
       Alert.alert(
         'Pro feature',
         'Cloud backup syncs profiles across devices on the Pro plan. Upgrade to enable.',
         [{ text: 'OK' }],
       );
-      // Free-tier user: keep the toggle off until payment is wired.
       return;
     }
     updateSetting('cloudBackupEnabled', value);
