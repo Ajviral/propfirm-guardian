@@ -36,7 +36,6 @@ import {
   purchaseMonthlyPro,
   restorePurchases,
 } from '../services/revenueCat';
-import { formatCurrency } from '../utils';
 import {
   DISCLAIMER_ACCEPTED_AT_KEY,
   DISCLAIMER_ACCEPTED_KEY,
@@ -57,22 +56,6 @@ const KNOWN_STORAGE_KEYS = [
   DISCLAIMER_ACCEPTED_AT_KEY,
 ] as const;
 
-function clampHour(n: number): number {
-  if (!Number.isFinite(n)) return 0;
-  return Math.max(0, Math.min(23, Math.floor(n)));
-}
-
-function clampMinute(n: number): number {
-  // Spec calls out 0 or 30 as the only valid choices.
-  return n >= 30 ? 30 : 0;
-}
-
-function formatEodTime(h: number, m: number): string {
-  const hh = h.toString().padStart(2, '0');
-  const mm = m.toString().padStart(2, '0');
-  return `${hh}:${mm}`;
-}
-
 type PurchaseAction = 'monthly' | 'annual' | 'restore' | null;
 
 export default function SettingsScreen({ navigation }: Props) {
@@ -84,24 +67,10 @@ export default function SettingsScreen({ navigation }: Props) {
 
   // Local string buffers for numeric inputs (we keep raw text so backspace etc. feels normal).
   const [riskBuf, setRiskBuf] = useState(String(settings.defaultRiskPercentage));
-  const [eodHourBuf, setEodHourBuf] = useState(String(settings.eodCutoffHour));
-  const [eodMinBuf, setEodMinBuf] = useState(String(settings.eodCutoffMinute));
 
   const commitNum = (raw: string, fallback: number): number => {
     const n = Number.parseFloat(raw);
     return Number.isFinite(n) && n > 0 ? n : fallback;
-  };
-
-  const onCloudBackupChange = (value: boolean) => {
-    if (value && !isPro) {
-      Alert.alert(
-        'Pro feature',
-        'Cloud backup syncs profiles across devices on the Pro plan. Upgrade to enable.',
-        [{ text: 'OK' }],
-      );
-      return;
-    }
-    updateSetting('cloudBackupEnabled', value);
   };
 
   const onResetAllData = () => {
@@ -136,8 +105,6 @@ export default function SettingsScreen({ navigation }: Props) {
                     useSettingsStore.setState(DEFAULT_SETTINGS);
 
                     setRiskBuf(String(DEFAULT_SETTINGS.defaultRiskPercentage));
-                    setEodHourBuf(String(DEFAULT_SETTINGS.eodCutoffHour));
-                    setEodMinBuf(String(DEFAULT_SETTINGS.eodCutoffMinute));
 
                     Alert.alert(
                       'Data cleared',
@@ -221,8 +188,6 @@ export default function SettingsScreen({ navigation }: Props) {
     }
   };
 
-  const masterOff = !settings.notificationsEnabled;
-
   return (
     <SafeAreaView style={styles.screen} edges={['bottom']}>
       <KeyboardAvoidingView
@@ -236,19 +201,6 @@ export default function SettingsScreen({ navigation }: Props) {
         >
           {/* §1 App Preferences */}
           <Section title="App Preferences">
-            <Row
-              label="Dark Mode"
-              right={
-                <Switch
-                  value={true}
-                  disabled
-                  trackColor={{ false: '#2D3748', true: '#00D4AA' }}
-                  thumbColor="#FFFFFF"
-                />
-              }
-              caption="Dark mode recommended for trading environments"
-            />
-            <Divider />
             <Row
               label="Currency Symbol"
               right={
@@ -284,51 +236,7 @@ export default function SettingsScreen({ navigation }: Props) {
             />
           </Section>
 
-          {/* §2 EOD */}
-          <Section title="EOD Settings">
-            <Row
-              label="Cutoff Hour (0–23)"
-              right={
-                <TextInput
-                  style={styles.inlineInputNumeric}
-                  value={eodHourBuf}
-                  onChangeText={setEodHourBuf}
-                  keyboardType="number-pad"
-                  onBlur={() => {
-                    const next = clampHour(Number.parseInt(eodHourBuf, 10));
-                    updateSetting('eodCutoffHour', next);
-                    setEodHourBuf(String(next));
-                  }}
-                />
-              }
-            />
-            <Divider />
-            <Row
-              label="Cutoff Minute (0 or 30)"
-              right={
-                <TextInput
-                  style={styles.inlineInputNumeric}
-                  value={eodMinBuf}
-                  onChangeText={setEodMinBuf}
-                  keyboardType="number-pad"
-                  onBlur={() => {
-                    const next = clampMinute(Number.parseInt(eodMinBuf, 10) || 0);
-                    updateSetting('eodCutoffMinute', next);
-                    setEodMinBuf(String(next));
-                  }}
-                />
-              }
-              caption="Set to your prop firm's end of day time in your local timezone"
-            />
-            <View style={styles.eodSummary}>
-              <Text style={styles.eodSummaryLabel}>Current EOD time</Text>
-              <Text style={styles.eodSummaryValue}>
-                {formatEodTime(settings.eodCutoffHour, settings.eodCutoffMinute)}
-              </Text>
-            </View>
-          </Section>
-
-          {/* §3 Notifications */}
+          {/* §2 Notifications */}
           <Section title="Notifications">
             <Pressable
               style={styles.actionRow}
@@ -349,61 +257,19 @@ export default function SettingsScreen({ navigation }: Props) {
                 />
               }
             />
-            <Divider />
-            <SubToggle
-              label="Daily loss alerts"
-              value={settings.alertsDailyLoss}
-              disabled={masterOff}
-              onValueChange={(v) => updateSetting('alertsDailyLoss', v)}
-            />
-            <Divider />
-            <SubToggle
-              label="Max loss alerts"
-              value={settings.alertsMaxLoss}
-              disabled={masterOff}
-              onValueChange={(v) => updateSetting('alertsMaxLoss', v)}
-            />
-            <Divider />
-            <SubToggle
-              label="Profit target milestones"
-              value={settings.alertsProfitTarget}
-              disabled={masterOff}
-              onValueChange={(v) => updateSetting('alertsProfitTarget', v)}
-            />
-            <Divider />
-            <SubToggle
-              label="Pre-news warnings"
-              value={settings.alertsPreNews}
-              disabled={masterOff}
-              onValueChange={(v) => updateSetting('alertsPreNews', v)}
-            />
-            <Divider />
-            <SubToggle
-              label="EOD reminders"
-              value={settings.alertsEodReminder}
-              disabled={masterOff}
-              onValueChange={(v) => updateSetting('alertsEodReminder', v)}
-            />
-            <Divider />
-            <SubToggle
-              label="Minimum trading days reminders"
-              value={settings.alertsMinTradingDays}
-              disabled={masterOff}
-              onValueChange={(v) => updateSetting('alertsMinTradingDays', v)}
-            />
           </Section>
 
-          {/* §4 Security */}
+          {/* §3 Security */}
           <Section title="Security">
             <Row
-              label="Biometric Lock"
-              caption="Require fingerprint or face ID to open app"
+              label="Biometric Lock — Coming Soon"
+              labelDisabled
               right={
                 <Switch
-                  value={settings.biometricLockEnabled}
-                  onValueChange={(v) => updateSetting('biometricLockEnabled', v)}
+                  value={false}
+                  disabled
                   trackColor={{ false: '#2D3748', true: '#00D4AA' }}
-                  thumbColor="#FFFFFF"
+                  thumbColor="#4A5568"
                 />
               }
             />
@@ -422,7 +288,7 @@ export default function SettingsScreen({ navigation }: Props) {
             />
           </Section>
 
-          {/* §5 Data Management */}
+          {/* §4 Data Management */}
           <Section title="Data Management">
             <Pressable
               style={styles.actionRow}
@@ -435,14 +301,14 @@ export default function SettingsScreen({ navigation }: Props) {
             </Pressable>
             <Divider />
             <Row
-              label="Cloud backup"
-              caption="Pro feature — sync profiles across devices"
+              label="Cloud backup — Coming Soon"
+              labelDisabled
               right={
                 <Switch
-                  value={settings.cloudBackupEnabled}
-                  onValueChange={onCloudBackupChange}
+                  value={false}
+                  disabled
                   trackColor={{ false: '#2D3748', true: '#00D4AA' }}
-                  thumbColor="#FFFFFF"
+                  thumbColor="#4A5568"
                 />
               }
             />
@@ -452,7 +318,7 @@ export default function SettingsScreen({ navigation }: Props) {
             </Pressable>
           </Section>
 
-          {/* §6 About */}
+          {/* §5 About */}
           <Section title="About">
             <Row
               label={`${APP_CONFIG.appName}`}
@@ -492,7 +358,7 @@ export default function SettingsScreen({ navigation }: Props) {
             </Pressable>
           </Section>
 
-          {/* §7 Subscription */}
+          {/* §6 Subscription */}
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Subscription</Text>
             <View style={styles.sectionBody}>
@@ -663,35 +529,6 @@ function Row({
   );
 }
 
-function SubToggle({
-  label,
-  value,
-  disabled,
-  onValueChange,
-}: {
-  label: string;
-  value: boolean;
-  disabled?: boolean;
-  onValueChange: (v: boolean) => void;
-}) {
-  return (
-    <View style={styles.row}>
-      <View style={styles.rowText}>
-        <Text style={[styles.rowLabel, disabled && styles.disabledText]}>{label}</Text>
-      </View>
-      <View style={styles.rowRight}>
-        <Switch
-          value={value && !disabled}
-          onValueChange={onValueChange}
-          disabled={disabled}
-          trackColor={{ false: '#2D3748', true: '#00D4AA' }}
-          thumbColor={disabled ? '#4A5568' : '#FFFFFF'}
-        />
-      </View>
-    </View>
-  );
-}
-
 function Divider() {
   return <View style={styles.divider} />;
 }
@@ -775,23 +612,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     minWidth: 80,
     textAlign: 'right',
-  },
-  eodSummary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: '#1A202C',
-  },
-  eodSummaryLabel: {
-    color: '#A0AEC0',
-    fontSize: 12,
-  },
-  eodSummaryValue: {
-    color: '#00D4AA',
-    fontSize: 16,
-    fontWeight: '700',
   },
   actionRow: {
     flexDirection: 'row',
