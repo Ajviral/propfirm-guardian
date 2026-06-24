@@ -490,8 +490,8 @@ export default function SettingsScreen({ navigation }: Props) {
                   <Text style={styles.trialSectionLabel}>Free Trial:</Text>
                   <TrialCountdownDisplay color="#00D4AA" fontSize={24} variant="green" />
                   <Text style={styles.subscriptionDesc}>
-                    Upgrade to Pro for live MT5 monitoring and push alerts. Get 50% off your
-                    first month before your trial ends.
+                    Upgrade to Pro for live MT5 monitoring and push alerts. Save 35%+ with
+                    the annual plan.
                   </Text>
                   <View style={styles.bestValueBadge}>
                     <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
@@ -521,7 +521,7 @@ export default function SettingsScreen({ navigation }: Props) {
                       <ActivityIndicator color="#FFFFFF" />
                     ) : (
                       <Text style={styles.upgradeBtnTextSecondary}>
-                        Monthly — $9.99 first month
+                        Monthly — $9.99/mo for first 2 months
                       </Text>
                     )}
                   </Pressable>
@@ -825,14 +825,32 @@ const styles = StyleSheet.create({
     backgroundColor: '#00D4AA',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'stretch',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   upgradeBtnSecondary: {
-    marginTop: 10,
-    backgroundColor: '#2D3748',
+    marginTop: 12,
+    backgroundColor: '#0F2A24',
+    borderWidth: 2,
+    borderColor: '#00D4AA',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   upgradeBtnText: {
     color: '#0D1117',
@@ -842,7 +860,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   upgradeBtnTextSecondary: {
-    color: '#FFFFFF',
+    color: '#00D4AA',
     fontWeight: '800',
     fontSize: 15,
     textAlign: 'center',

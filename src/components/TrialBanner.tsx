@@ -107,7 +107,7 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           <Text style={styles.bannerAmberTitle}>Free Trial:</Text>
           <TrialCountdownDisplay color="#F6C90E" fontSize={28} variant="amber" />
           <Text style={styles.bannerAmberSub}>
-            Subscribe now for 50% off — $9.99 first month, then $19.99/month
+            Subscribe for live MT5 monitoring and push alerts. Save 35%+ with the annual plan.
           </Text>
           <View style={styles.bestValueBadge}>
             <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
@@ -134,7 +134,7 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
             {purchaseLoading === 'monthly' ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.bannerMonthlyBtnText}>Monthly — $9.99 first month</Text>
+              <Text style={styles.bannerMonthlyBtnText}>Monthly — $9.99/mo for first 2 months</Text>
             )}
           </Pressable>
         </Animated.View>
@@ -146,7 +146,7 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
         <Text style={styles.bannerGreenTitle}>Free Trial:</Text>
         <TrialCountdownDisplay color="#00D4AA" fontSize={28} variant="green" />
         <Text style={styles.bannerGreenSub}>
-          Upgrade to Pro — get 50% off your first month before your trial expires
+          Upgrade to Pro for live MT5 monitoring and push alerts.
         </Text>
         <Pressable style={styles.bannerGreenBtn} onPress={onUpgrade}>
           <Text style={styles.bannerGreenBtnText}>Upgrade Now</Text>
@@ -195,7 +195,7 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           ) : (
             <Text style={styles.overlaySecondaryBtnText}>
               {withinDiscountWindow
-                ? 'Monthly — $9.99 first month'
+                ? 'Monthly — $9.99/mo for first 2 months'
                 : 'Monthly — $19.99/month'}
             </Text>
           )}
@@ -245,11 +245,16 @@ const styles = StyleSheet.create({
   bannerGreenBtn: {
     alignSelf: 'stretch',
     backgroundColor: '#00D4AA',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   bannerGreenBtnText: {
     color: '#0D1117',
@@ -259,16 +264,23 @@ const styles = StyleSheet.create({
   },
   bannerMonthlyBtn: {
     alignSelf: 'stretch',
-    backgroundColor: '#2D3748',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
+    backgroundColor: '#0F2A24',
+    borderWidth: 2,
+    borderColor: '#00D4AA',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 12,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   bannerMonthlyBtnText: {
-    color: '#FFFFFF',
+    color: '#00D4AA',
     fontWeight: '800',
     fontSize: 13,
     textAlign: 'center',
@@ -371,12 +383,16 @@ const styles = StyleSheet.create({
   overlayPrimaryBtn: {
     backgroundColor: '#00D4AA',
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   overlayPrimaryBtnText: {
     color: '#0D1117',
@@ -386,19 +402,25 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   overlaySecondaryBtn: {
-    borderWidth: 1,
-    borderColor: '#30363D',
+    marginTop: 12,
+    backgroundColor: '#0F2A24',
+    borderWidth: 2,
+    borderColor: '#00D4AA',
     paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
   overlaySecondaryBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: '#00D4AA',
+    fontWeight: '800',
     fontSize: 15,
     textAlign: 'center',
     flexWrap: 'wrap',

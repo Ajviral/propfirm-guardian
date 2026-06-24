@@ -284,14 +284,14 @@ export async function scheduleTrialWarningNotifications(expiresAt: string): Prom
   await scheduleAt(
     'trial-warning-day5',
     '⏰ Trial Ends in 2 Days — PropFirm Guardian',
-    "Subscribe now and get 50% off your first month. Don't lose live MT5 monitoring.",
+    "Subscribe to keep live MT5 monitoring. Save 35%+ with the annual plan.",
     new Date(expiryMs - 48 * 60 * 60 * 1000),
   );
 
   await scheduleAt(
     'trial-warning-day6',
     '⚠️ Last Day of Trial — PropFirm Guardian',
-    'Your trial expires in 24 hours. Lock in 50% off now — $9.99 first month.',
+    'Your trial expires in 24 hours. Subscribe now — $9.99/mo for first 2 months.',
     new Date(expiryMs - 24 * 60 * 60 * 1000),
   );
 
