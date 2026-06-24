@@ -81,6 +81,7 @@ export const useSettingsStore = create<SettingsStore>()(
         const {
           updateSetting: _u,
           resetAll: _ra,
+          isPro: _isPro,
           ...persisted
         } = state;
         return persisted;

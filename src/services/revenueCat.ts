@@ -27,6 +27,10 @@ export function initializePurchases(): void {
 
   Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.ERROR);
   Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+  Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+    const isPro = customerInfo.entitlements.active[PRO_ENTITLEMENT_ID] !== undefined;
+    useSettingsStore.getState().updateSetting('isPro', isPro);
+  });
   purchasesInitialized = true;
 }
 

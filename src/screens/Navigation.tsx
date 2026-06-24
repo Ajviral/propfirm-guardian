@@ -9,7 +9,7 @@ import {
 import { checkTrialStatus, refreshTrialCountdown, createOfflineTrialFallback } from '../services/trialService';
 import { useDrawdownMonitor } from '../hooks/useDrawdownMonitor';
 import { useTrialStore } from '../store/useTrialStore';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, AppState, View } from 'react-native';
 import { type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -74,6 +74,15 @@ const AppNavigator = () => {
   useEffect(() => {
     initializePurchases();
     void syncProStatus();
+  }, []);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        void syncProStatus();
+      }
+    });
+    return () => subscription.remove();
   }, []);
 
   useEffect(() => {
