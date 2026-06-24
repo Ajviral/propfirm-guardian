@@ -387,8 +387,9 @@ export default function SettingsScreen({ navigation }: Props) {
                   <Text style={styles.trialSectionLabel}>Free Trial:</Text>
                   <TrialCountdownDisplay color="#00D4AA" fontSize={24} variant="green" />
                   <Text style={styles.subscriptionDesc}>
-                    Upgrade to Pro for live MT5 monitoring and push alerts. Save 35%+ with
-                    the annual plan.
+                    Upgrade to Pro for live trading-account monitoring across MetaTrader 4,
+                    MetaTrader 5, and cTrader, plus push alerts. Save 35%+ with the annual
+                    plan.
                   </Text>
                   <View style={styles.bestValueBadge}>
                     <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
@@ -435,8 +436,8 @@ export default function SettingsScreen({ navigation }: Props) {
                   <Text style={styles.subscriptionHeading}>Upgrade to Pro</Text>
                   <Text style={styles.subscriptionDesc}>
                     {trialStatus === 'expired'
-                      ? 'Your free trial has ended. Subscribe to restore live monitoring and alerts.'
-                      : 'Get live MT5 account monitoring, real-time drawdown alerts, and push notifications.'}
+                      ? 'Your free trial has ended. Subscribe to restore live monitoring and alerts across MetaTrader 4, MetaTrader 5, and cTrader.'
+                      : 'Get live trading-account monitoring across MetaTrader 4, MetaTrader 5, and cTrader, with real-time drawdown alerts and push notifications.'}
                   </Text>
                   <Text style={styles.lockedItem}>• Live balance and equity tracking</Text>
                   <Text style={styles.lockedItem}>• Real-time drawdown alerts</Text>

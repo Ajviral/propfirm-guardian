@@ -110,10 +110,11 @@ function ProGate({
       <Text style={styles.proTitle}>Live Account Monitoring</Text>
       <Text style={styles.proBadge}>Pro Feature</Text>
       <Text style={styles.proDesc}>
-        Connect your MT5 account for real-time drawdown alerts, live equity tracking, and
-        instant notifications when your limits are approaching.
+        Connect your trading account for real-time drawdown alerts, live equity tracking, and
+        instant notifications when your limits are approaching. Supports MetaTrader 4,
+        MetaTrader 5, and cTrader.
       </Text>
-      <Text style={styles.proBullet}>• Real-time balance and equity from your MT5 terminal</Text>
+      <Text style={styles.proBullet}>• Real-time balance and equity from your trading terminal</Text>
       <Text style={styles.proBullet}>• Live drawdown vs daily and max loss limits</Text>
       <Text style={styles.proBullet}>• Open positions count and floating P&L</Text>
       <Text style={styles.proBullet}>• Instant PASS / CAUTION / FAIL verdict from live data</Text>
@@ -370,7 +371,7 @@ export default function LiveConnectionScreen() {
         {connections.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>No live connections yet</Text>
-            <Text style={styles.emptySub}>Add your MT5 account below to get started</Text>
+            <Text style={styles.emptySub}>Add your trading account below to get started</Text>
           </View>
         ) : (
           connections.map((c) => (
@@ -389,7 +390,10 @@ export default function LiveConnectionScreen() {
         {/* Section 3 — Add new connection */}
         {!setupToken ? (
           <View style={styles.card}>
-            <Text style={styles.sectionLabel}>Connect MT5 Account</Text>
+            <Text style={styles.sectionLabel}>Connect Account</Text>
+            <Text style={styles.platformNote}>
+              MetaTrader 5 supported now. MT4 and cTrader coming soon.
+            </Text>
             <Text style={styles.inputLabel}>Connection label</Text>
             <TextInput
               style={styles.input}
@@ -518,6 +522,9 @@ export default function LiveConnectionScreen() {
           </View>
         ) : null}
 
+        <Text style={styles.disclaimer}>
+          Beta: Keep the app open for live monitoring. Background alerts are coming soon.
+        </Text>
         <Text style={styles.disclaimer}>
           Live data is provided for informational purposes only. Always verify with your broker
           before making trading decisions.
@@ -664,6 +671,11 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   verdictText: { fontWeight: '800', fontSize: 16, letterSpacing: 1 },
+  platformNote: {
+    color: '#8B949E',
+    fontSize: 12,
+    marginBottom: 8,
+  },
   disclaimer: {
     color: '#4A5568',
     fontSize: 11,

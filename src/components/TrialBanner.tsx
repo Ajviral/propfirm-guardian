@@ -107,7 +107,8 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           <Text style={styles.bannerAmberTitle}>Free Trial:</Text>
           <TrialCountdownDisplay color="#F6C90E" fontSize={28} variant="amber" />
           <Text style={styles.bannerAmberSub}>
-            Subscribe for live MT5 monitoring and push alerts. Save 35%+ with the annual plan.
+            Subscribe for live monitoring across MetaTrader 4, MetaTrader 5, and cTrader, plus
+            push alerts. Save 35%+ with the annual plan.
           </Text>
           <View style={styles.bestValueBadge}>
             <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
@@ -146,7 +147,8 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
         <Text style={styles.bannerGreenTitle}>Free Trial:</Text>
         <TrialCountdownDisplay color="#00D4AA" fontSize={28} variant="green" />
         <Text style={styles.bannerGreenSub}>
-          Upgrade to Pro for live MT5 monitoring and push alerts.
+          Upgrade to Pro for live monitoring across MetaTrader 4, MetaTrader 5, and cTrader,
+          plus push alerts.
         </Text>
         <Pressable style={styles.bannerGreenBtn} onPress={onUpgrade}>
           <Text style={styles.bannerGreenBtnText}>Upgrade Now</Text>

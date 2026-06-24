@@ -284,7 +284,7 @@ export async function scheduleTrialWarningNotifications(expiresAt: string): Prom
   await scheduleAt(
     'trial-warning-day5',
     '⏰ Trial Ends in 2 Days — PropFirm Guardian',
-    "Subscribe to keep live MT5 monitoring. Save 35%+ with the annual plan.",
+    'Subscribe to keep live monitoring across MetaTrader 4, MetaTrader 5, and cTrader. Save 35%+ with the annual plan.',
     new Date(expiryMs - 48 * 60 * 60 * 1000),
   );
 
