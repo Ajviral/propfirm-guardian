@@ -37,16 +37,25 @@ export interface LiveAccountData {
 
 export type LiveConnectionStatus = 'pending' | 'connected' | 'disconnected' | 'error';
 
+export type TradingPlatform = 'mt5' | 'mt4' | 'ctrader';
+
 /** Persisted link between a generated token and a firm profile in the app. */
 export interface LiveConnection {
   token: string;
   label: string;
   profileId: string;
+  platform: TradingPlatform;
   serverUrl: string;
   status: LiveConnectionStatus;
   lastSeen: string | null;
   lastData: LiveAccountData | null;
   createdAt: string;
+}
+
+type StoredLiveConnection = Omit<LiveConnection, 'platform'> & { platform?: TradingPlatform };
+
+function normalizeConnection(connection: StoredLiveConnection): LiveConnection {
+  return { ...connection, platform: connection.platform ?? 'mt5' };
 }
 
 export interface LiveConnectionStore {
@@ -67,7 +76,7 @@ export const useLiveConnectionStore = create<LiveConnectionStore>()(
 
       addConnection: (connection) =>
         set((state) => ({
-          connections: [...state.connections, connection],
+          connections: [...state.connections, normalizeConnection(connection)],
           activeConnectionToken: connection.token,
         })),
 
@@ -81,13 +90,15 @@ export const useLiveConnectionStore = create<LiveConnectionStore>()(
       setActiveConnection: (token) =>
         set(() => ({ activeConnectionToken: token })),
 
-      getConnectionByToken: (token) =>
-        get().connections.find((c) => c.token === token) ?? null,
+      getConnectionByToken: (token) => {
+        const connection = get().connections.find((c) => c.token === token);
+        return connection ? normalizeConnection(connection) : null;
+      },
 
       updateConnection: (token, updates) =>
         set((state) => ({
           connections: state.connections.map((c) =>
-            c.token === token ? { ...c, ...updates } : c,
+            c.token === token ? normalizeConnection({ ...c, ...updates }) : normalizeConnection(c),
           ),
         })),
     }),
@@ -98,6 +109,14 @@ export const useLiveConnectionStore = create<LiveConnectionStore>()(
         connections: state.connections,
         activeConnectionToken: state.activeConnectionToken,
       }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<LiveConnectionStore>;
+        return {
+          ...currentState,
+          ...persisted,
+          connections: (persisted.connections ?? []).map((c) => normalizeConnection(c)),
+        };
+      },
     },
   ),
 );

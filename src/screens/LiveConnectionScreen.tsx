@@ -28,6 +28,7 @@ import {
   useLiveConnectionStore,
   type LiveConnection,
   type LiveConnectionStatus,
+  type TradingPlatform,
 } from '../store/useLiveConnectionStore';
 import type { FirmProfile, VerdictType } from '../types';
 import {
@@ -226,6 +227,7 @@ export default function LiveConnectionScreen() {
   const removeConnection = useLiveConnectionStore((s) => s.removeConnection);
 
   const [label, setLabel] = useState('');
+  const [platform, setPlatform] = useState<TradingPlatform>('mt5');
   const [profileId, setProfileId] = useState<string | null>(
     profiles.length > 0 ? profiles[0].id : null,
   );
@@ -275,6 +277,7 @@ export default function LiveConnectionScreen() {
       token,
       label: label.trim(),
       profileId,
+      platform,
       serverUrl: LIVE_SERVER_HTTPS,
       status: 'pending',
       lastSeen: null,
@@ -284,7 +287,7 @@ export default function LiveConnectionScreen() {
     setSetupToken(token);
     setCopied(false);
     void registerConnectionToken(token);
-  }, [label, profileId, addConnection]);
+  }, [label, profileId, platform, addConnection]);
 
   const handleRestore = useCallback(async () => {
     setPurchaseLoading('restore');
@@ -391,9 +394,23 @@ export default function LiveConnectionScreen() {
         {!setupToken ? (
           <View style={styles.card}>
             <Text style={styles.sectionLabel}>Connect Account</Text>
-            <Text style={styles.platformNote}>
-              MetaTrader 5 supported now. MT4 and cTrader coming soon.
-            </Text>
+            <Text style={styles.inputLabel}>Platform</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
+              <Pressable
+                style={[styles.chip, platform === 'mt5' && styles.chipActive]}
+                onPress={() => setPlatform('mt5')}
+              >
+                <Text style={[styles.chipText, platform === 'mt5' && styles.chipTextActive]}>
+                  MetaTrader 5
+                </Text>
+              </Pressable>
+              <View style={[styles.chip, styles.chipDisabled]}>
+                <Text style={[styles.chipText, styles.chipTextDisabled]}>MT4 · Soon</Text>
+              </View>
+              <View style={[styles.chip, styles.chipDisabled]}>
+                <Text style={[styles.chipText, styles.chipTextDisabled]}>cTrader · Soon</Text>
+              </View>
+            </ScrollView>
             <Text style={styles.inputLabel}>Connection label</Text>
             <TextInput
               style={styles.input}
@@ -601,8 +618,14 @@ const styles = StyleSheet.create({
     borderColor: '#30363D',
   },
   chipActive: { borderColor: '#00D4AA', backgroundColor: '#0D1117' },
+  chipDisabled: {
+    backgroundColor: '#161B22',
+    borderColor: '#21262D',
+    opacity: 0.6,
+  },
   chipText: { color: '#A0AEC0', fontSize: 13, fontWeight: '600' },
   chipTextActive: { color: '#00D4AA' },
+  chipTextDisabled: { color: '#4A5568' },
   hint: { color: '#718096', fontSize: 12, marginBottom: 8 },
   primaryBtn: {
     backgroundColor: '#00D4AA',
@@ -671,11 +694,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   verdictText: { fontWeight: '800', fontSize: 16, letterSpacing: 1 },
-  platformNote: {
-    color: '#8B949E',
-    fontSize: 12,
-    marginBottom: 8,
-  },
   disclaimer: {
     color: '#4A5568',
     fontSize: 11,
