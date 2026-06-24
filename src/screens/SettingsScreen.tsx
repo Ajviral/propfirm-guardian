@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -153,6 +154,41 @@ export default function SettingsScreen({ navigation }: Props) {
 
   const placeholderAlert = (title: string, message: string) =>
     Alert.alert(title, message, [{ text: 'OK' }]);
+
+  const onContactSupport = () => {
+    Linking.openURL('mailto:grandmasterlabs01@gmail.com?subject=PropFirm Guardian Support').catch(
+      () =>
+        Alert.alert(
+          'Unable to open email app',
+          'Please email grandmasterlabs01@gmail.com',
+        ),
+    );
+  };
+
+  const onRateApp = () => {
+    const pkg = 'com.giftobey.propfirmguardian';
+    Linking.openURL(`market://details?id=${pkg}`).catch(() =>
+      Linking.openURL(`https://play.google.com/store/apps/details?id=${pkg}`),
+    );
+  };
+
+  const onOpenTerms = () => {
+    Linking.openURL('https://ajviral.github.io/propfirm-guardian/terms.html').catch(() =>
+      Alert.alert(
+        'Unable to open link',
+        'Please visit https://ajviral.github.io/propfirm-guardian/terms.html',
+      ),
+    );
+  };
+
+  const onOpenPrivacy = () => {
+    Linking.openURL('https://ajviral.github.io/propfirm-guardian/privacy.html').catch(() =>
+      Alert.alert(
+        'Unable to open link',
+        'Please visit https://ajviral.github.io/propfirm-guardian/privacy.html',
+      ),
+    );
+  };
 
   const handleRestore = async () => {
     setPurchaseLoading('restore');
@@ -425,12 +461,7 @@ export default function SettingsScreen({ navigation }: Props) {
             <Divider />
             <Pressable
               style={styles.actionRow}
-              onPress={() =>
-                placeholderAlert(
-                  'Terms of Service',
-                  'Re-opening the disclaimer from Settings is temporarily disabled. It will return in a future update.',
-                )
-              }
+              onPress={onOpenTerms}
             >
               <Text style={styles.actionRowLabel}>Terms of Service</Text>
               <Text style={styles.actionRowChevron}>›</Text>
@@ -438,7 +469,7 @@ export default function SettingsScreen({ navigation }: Props) {
             <Divider />
             <Pressable
               style={styles.actionRow}
-              onPress={() => placeholderAlert('Privacy Policy', 'Privacy Policy coming soon')}
+              onPress={onOpenPrivacy}
             >
               <Text style={styles.actionRowLabel}>Privacy Policy</Text>
               <Text style={styles.actionRowChevron}>›</Text>
@@ -446,7 +477,7 @@ export default function SettingsScreen({ navigation }: Props) {
             <Divider />
             <Pressable
               style={styles.actionRow}
-              onPress={() => placeholderAlert('Rate', 'Rate feature coming soon')}
+              onPress={onRateApp}
             >
               <Text style={styles.actionRowLabel}>Rate This App</Text>
               <Text style={styles.actionRowChevron}>›</Text>
@@ -454,7 +485,7 @@ export default function SettingsScreen({ navigation }: Props) {
             <Divider />
             <Pressable
               style={styles.actionRow}
-              onPress={() => placeholderAlert('Support', 'Support coming soon')}
+              onPress={onContactSupport}
             >
               <Text style={styles.actionRowLabel}>Contact Support</Text>
               <Text style={styles.actionRowChevron}>›</Text>
