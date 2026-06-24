@@ -1,5 +1,7 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Modal,
   Pressable,
@@ -13,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import TrialCountdownDisplay from './TrialCountdownDisplay';
 import { useTrialGate } from '../hooks/useTrialGate';
 import {
+  purchaseAnnualPro,
   purchaseMonthlyPro,
   restorePurchases,
 } from '../services/revenueCat';
@@ -26,12 +29,15 @@ interface TrialBannerProps {
   showExpiryOverlay?: boolean;
 }
 
+type PurchaseAction = 'monthly' | 'annual' | 'restore' | null;
+
 export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerProps) {
   const navigation = useNavigation<Nav>();
   const { status, daysRemaining, isExpired, isProOrTrial } = useTrialGate();
   const expiresAt = useTrialStore((s) => s.expiresAt);
   const continuedWithFree = useTrialStore((s) => s.continuedWithFree);
   const setContinuedWithFree = useTrialStore((s) => s.setContinuedWithFree);
+  const [purchaseLoading, setPurchaseLoading] = useState<PurchaseAction>(null);
 
   const pulse = useRef(new Animated.Value(1)).current;
   const isUrgent = daysRemaining <= 1;
@@ -55,8 +61,34 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
   }, [expiresAt, isExpired]);
 
   const onUpgrade = () => navigation.navigate('Settings');
-  const onSubscribeDiscount = () => void purchaseMonthlyPro();
-  const onRestore = () => void restorePurchases();
+
+  const handleAnnual = async () => {
+    setPurchaseLoading('annual');
+    const result = await purchaseAnnualPro();
+    setPurchaseLoading(null);
+    if (result.success) return;
+    if (result.error !== 'cancelled') {
+      Alert.alert('Purchase failed', result.error ?? 'Unable to complete purchase.');
+    }
+  };
+
+  const handleMonthly = async () => {
+    setPurchaseLoading('monthly');
+    const result = await purchaseMonthlyPro();
+    setPurchaseLoading(null);
+    if (result.success) return;
+    if (result.error !== 'cancelled') {
+      Alert.alert('Purchase failed', result.error ?? 'Unable to complete purchase.');
+    }
+  };
+
+  const onRestore = async () => {
+    setPurchaseLoading('restore');
+    const result = await restorePurchases();
+    setPurchaseLoading(null);
+    if (result.success) return;
+    Alert.alert('Restore failed', result.error ?? 'No active subscription found.');
+  };
 
   if (isProOrTrial && !isExpired && (status === 'active' || status === 'new')) {
     if (isUrgent) {
@@ -77,14 +109,33 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           <Text style={styles.bannerAmberSub}>
             Subscribe now for 50% off — $9.99 first month, then $19.99/month
           </Text>
+          <View style={styles.bestValueBadge}>
+            <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
+          </View>
           <Pressable
-            style={styles.bannerAmberBtn}
-            onPress={onSubscribeDiscount}
+            style={styles.bannerGreenBtn}
+            onPress={() => void handleAnnual()}
+            disabled={purchaseLoading !== null}
           >
-            <Text style={styles.bannerAmberBtnText}>Subscribe Now — 50% Off</Text>
+            {purchaseLoading === 'annual' ? (
+              <ActivityIndicator color="#0D1117" />
+            ) : (
+              <>
+                <Text style={styles.bannerGreenBtnText}>Annual — $99.99 first year</Text>
+                <Text style={styles.upgradeBtnSubText}>Save 35%+ vs monthly, every year</Text>
+              </>
+            )}
           </Pressable>
-          <Pressable onPress={onUpgrade}>
-            <Text style={styles.bannerAmberLink}>Full price $19.99/month</Text>
+          <Pressable
+            style={styles.bannerMonthlyBtn}
+            onPress={() => void handleMonthly()}
+            disabled={purchaseLoading !== null}
+          >
+            {purchaseLoading === 'monthly' ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text style={styles.bannerMonthlyBtnText}>Monthly — $9.99 first month</Text>
+            )}
           </Pressable>
         </Animated.View>
       );
@@ -117,26 +168,48 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           Subscribe to Pro to keep live monitoring, push notifications, and all premium
           features.
         </Text>
-        {withinDiscountWindow ? (
-          <Pressable style={styles.overlayPrimaryBtn} onPress={onSubscribeDiscount}>
-            <Text style={styles.overlayPrimaryBtnText}>Subscribe — $9.99 First Month</Text>
-          </Pressable>
-        ) : null}
+        <View style={styles.bestValueBadge}>
+          <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
+        </View>
         <Pressable
-          style={[styles.overlaySecondaryBtn, !withinDiscountWindow && styles.overlayPrimaryBtn]}
-          onPress={onSubscribeDiscount}
+          style={styles.overlayPrimaryBtn}
+          onPress={() => void handleAnnual()}
+          disabled={purchaseLoading !== null}
         >
-          <Text
-            style={[
-              styles.overlaySecondaryBtnText,
-              !withinDiscountWindow && styles.overlayPrimaryBtnText,
-            ]}
-          >
-            Full Price — $19.99/month
-          </Text>
+          {purchaseLoading === 'annual' ? (
+            <ActivityIndicator color="#0D1117" />
+          ) : (
+            <>
+              <Text style={styles.overlayPrimaryBtnText}>Annual — $99.99 first year</Text>
+              <Text style={styles.upgradeBtnSubText}>Save 35%+ vs monthly, every year</Text>
+            </>
+          )}
         </Pressable>
-        <Pressable style={styles.overlayLink} onPress={onRestore}>
-          <Text style={styles.overlayLinkText}>Restore purchases</Text>
+        <Pressable
+          style={styles.overlaySecondaryBtn}
+          onPress={() => void handleMonthly()}
+          disabled={purchaseLoading !== null}
+        >
+          {purchaseLoading === 'monthly' ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text style={styles.overlaySecondaryBtnText}>
+              {withinDiscountWindow
+                ? 'Monthly — $9.99 first month'
+                : 'Monthly — $19.99/month'}
+            </Text>
+          )}
+        </Pressable>
+        <Pressable
+          style={styles.overlayLink}
+          onPress={() => void onRestore()}
+          disabled={purchaseLoading !== null}
+        >
+          {purchaseLoading === 'restore' ? (
+            <ActivityIndicator color="#00D4AA" size="small" />
+          ) : (
+            <Text style={styles.overlayLinkText}>Restore purchases</Text>
+          )}
         </Pressable>
         <Pressable style={styles.overlayLink} onPress={() => setContinuedWithFree(true)}>
           <Text style={styles.overlayLinkText}>Continue with free version</Text>
@@ -183,6 +256,46 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontSize: 13,
     textAlign: 'center',
+  },
+  bannerMonthlyBtn: {
+    alignSelf: 'stretch',
+    backgroundColor: '#2D3748',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  bannerMonthlyBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  bestValueBadge: {
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#0D1117',
+    borderWidth: 1,
+    borderColor: '#00D4AA',
+  },
+  bestValueBadgeText: {
+    color: '#00D4AA',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  upgradeBtnSubText: {
+    color: '#0D1117',
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
+    opacity: 0.85,
   },
   bannerAmber: {
     backgroundColor: '#2A1A00',

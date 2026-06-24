@@ -18,7 +18,7 @@ import { useLiveAccount } from '../hooks/useLiveAccount';
 import { useTrialGate } from '../hooks/useTrialGate';
 import TrialBanner from '../components/TrialBanner';
 import {
-  purchaseLifetimePro,
+  purchaseAnnualPro,
   purchaseMonthlyPro,
   registerConnectionToken,
   restorePurchases,
@@ -91,17 +91,17 @@ function verdictColor(v: VerdictType): string {
 
 // --- Pro upgrade gate -------------------------------------------------------
 
-type PurchaseAction = 'monthly' | 'lifetime' | 'restore' | null;
+type PurchaseAction = 'monthly' | 'annual' | 'restore' | null;
 
 function ProGate({
   purchaseLoading,
+  onAnnual,
   onMonthly,
-  onLifetime,
   onRestore,
 }: {
   purchaseLoading: PurchaseAction;
+  onAnnual: () => void;
   onMonthly: () => void;
-  onLifetime: () => void;
   onRestore: () => void;
 }) {
   return (
@@ -117,26 +117,32 @@ function ProGate({
       <Text style={styles.proBullet}>• Live drawdown vs daily and max loss limits</Text>
       <Text style={styles.proBullet}>• Open positions count and floating P&L</Text>
       <Text style={styles.proBullet}>• Instant PASS / CAUTION / FAIL verdict from live data</Text>
+      <View style={styles.bestValueBadge}>
+        <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
+      </View>
       <Pressable
         style={styles.upgradeBtn}
-        onPress={onMonthly}
+        onPress={onAnnual}
         disabled={purchaseLoading !== null}
       >
-        {purchaseLoading === 'monthly' ? (
+        {purchaseLoading === 'annual' ? (
           <ActivityIndicator color="#0D1117" />
         ) : (
-          <Text style={styles.upgradeBtnText}>Upgrade to Pro — $19.99/month</Text>
+          <>
+            <Text style={styles.upgradeBtnText}>Annual — $99.99 first year</Text>
+            <Text style={styles.upgradeBtnSubText}>Save 35%+ vs monthly, every year</Text>
+          </>
         )}
       </Pressable>
       <Pressable
         style={[styles.upgradeBtn, styles.upgradeBtnSecondary]}
-        onPress={onLifetime}
+        onPress={onMonthly}
         disabled={purchaseLoading !== null}
       >
-        {purchaseLoading === 'lifetime' ? (
+        {purchaseLoading === 'monthly' ? (
           <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text style={styles.upgradeBtnTextSecondary}>Lifetime — $149.99</Text>
+          <Text style={styles.upgradeBtnTextSecondary}>Monthly — $19.99/month</Text>
         )}
       </Pressable>
       <Pressable style={styles.restoreLink} onPress={onRestore} disabled={purchaseLoading !== null}>
@@ -297,9 +303,9 @@ export default function LiveConnectionScreen() {
     }
   }, []);
 
-  const handleLifetime = useCallback(async () => {
-    setPurchaseLoading('lifetime');
-    const result = await purchaseLifetimePro();
+  const handleAnnual = useCallback(async () => {
+    setPurchaseLoading('annual');
+    const result = await purchaseAnnualPro();
     setPurchaseLoading(null);
     if (result.success) return;
     if (result.error !== 'cancelled') {
@@ -346,8 +352,8 @@ export default function LiveConnectionScreen() {
       <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
         <ProGate
           purchaseLoading={purchaseLoading}
+          onAnnual={() => void handleAnnual()}
           onMonthly={() => void handleMonthly()}
-          onLifetime={() => void handleLifetime()}
           onRestore={() => void handleRestore()}
         />
       </SafeAreaView>
@@ -703,6 +709,31 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     flexWrap: 'wrap',
+  },
+  bestValueBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 16,
+    marginBottom: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#0D1117',
+    borderWidth: 1,
+    borderColor: '#00D4AA',
+  },
+  bestValueBadgeText: {
+    color: '#00D4AA',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  upgradeBtnSubText: {
+    color: '#0D1117',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
+    opacity: 0.85,
   },
   restoreLink: {
     marginTop: 16,

@@ -129,16 +129,14 @@ export async function purchaseMonthlyPro(): Promise<{ success: boolean; error?: 
 }
 
 /**
- * Purchases the lifetime package from the current RevenueCat offering.
+ * Purchases the annual subscription from the current RevenueCat offering.
  */
-export async function purchaseLifetimePro(): Promise<{ success: boolean; error?: string }> {
+export async function purchaseAnnualPro(): Promise<{ success: boolean; error?: string }> {
   try {
     const offerings = await Purchases.getOfferings();
     const pkg =
-      offerings.current?.lifetime ??
-      offerings.current?.availablePackages.find(
-        (p) => p.packageType === 'LIFETIME' || p.identifier.toLowerCase().includes('lifetime'),
-      );
+      offerings.current?.annual ??
+      offerings.current?.availablePackages.find((p) => p.packageType === 'ANNUAL');
     return purchasePackage(pkg);
   } catch (error) {
     return { success: false, error: errorMessage(error) };

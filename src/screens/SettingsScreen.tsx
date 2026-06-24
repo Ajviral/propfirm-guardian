@@ -31,7 +31,7 @@ import { useTrialStore } from '../store/useTrialStore';
 import TrialCountdownDisplay from '../components/TrialCountdownDisplay';
 import type { RootStackParamList } from '../types';
 import {
-  purchaseLifetimePro,
+  purchaseAnnualPro,
   purchaseMonthlyPro,
   restorePurchases,
 } from '../services/revenueCat';
@@ -72,7 +72,7 @@ function formatEodTime(h: number, m: number): string {
   return `${hh}:${mm}`;
 }
 
-type PurchaseAction = 'monthly' | 'lifetime' | 'restore' | null;
+type PurchaseAction = 'monthly' | 'annual' | 'restore' | null;
 
 export default function SettingsScreen({ navigation }: Props) {
   const settings = useSettingsStore();
@@ -175,9 +175,9 @@ export default function SettingsScreen({ navigation }: Props) {
     }
   };
 
-  const handleLifetime = async () => {
-    setPurchaseLoading('lifetime');
-    const result = await purchaseLifetimePro();
+  const handleAnnual = async () => {
+    setPurchaseLoading('annual');
+    const result = await purchaseAnnualPro();
     setPurchaseLoading(null);
     if (result.success) return;
     if (result.error !== 'cancelled') {
@@ -493,16 +493,35 @@ export default function SettingsScreen({ navigation }: Props) {
                     Upgrade to Pro for live MT5 monitoring and push alerts. Get 50% off your
                     first month before your trial ends.
                   </Text>
+                  <View style={styles.bestValueBadge}>
+                    <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
+                  </View>
                   <Pressable
                     style={styles.upgradeBtn}
+                    onPress={() => void handleAnnual()}
+                    disabled={purchaseLoading !== null}
+                  >
+                    {purchaseLoading === 'annual' ? (
+                      <ActivityIndicator color="#0D1117" />
+                    ) : (
+                      <>
+                        <Text style={styles.upgradeBtnText}>Annual — $99.99 first year</Text>
+                        <Text style={styles.upgradeBtnSubText}>
+                          Save 35%+ vs monthly, every year
+                        </Text>
+                      </>
+                    )}
+                  </Pressable>
+                  <Pressable
+                    style={[styles.upgradeBtn, styles.upgradeBtnSecondary]}
                     onPress={() => void handleMonthly()}
                     disabled={purchaseLoading !== null}
                   >
                     {purchaseLoading === 'monthly' ? (
-                      <ActivityIndicator color="#0D1117" />
+                      <ActivityIndicator color="#FFFFFF" />
                     ) : (
-                      <Text style={styles.upgradeBtnText}>
-                        Subscribe — $9.99 first month (50% off)
+                      <Text style={styles.upgradeBtnTextSecondary}>
+                        Monthly — $9.99 first month
                       </Text>
                     )}
                   </Pressable>
@@ -529,32 +548,34 @@ export default function SettingsScreen({ navigation }: Props) {
                   </Text>
                   <Text style={styles.lockedItem}>• Margin level warnings</Text>
                   <Text style={styles.lockedItem}>• Unlimited firm profiles</Text>
+                  <View style={styles.bestValueBadge}>
+                    <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
+                  </View>
                   <Pressable
                     style={styles.upgradeBtn}
-                    onPress={() => void handleMonthly()}
+                    onPress={() => void handleAnnual()}
                     disabled={purchaseLoading !== null}
                   >
-                    {purchaseLoading === 'monthly' ? (
+                    {purchaseLoading === 'annual' ? (
                       <ActivityIndicator color="#0D1117" />
                     ) : (
-                      <Text style={styles.upgradeBtnText}>
-                        {trialStatus === 'expired'
-                          ? 'Monthly — $19.99/month'
-                          : 'Monthly — $19.99/month'}
-                      </Text>
+                      <>
+                        <Text style={styles.upgradeBtnText}>Annual — $99.99 first year</Text>
+                        <Text style={styles.upgradeBtnSubText}>
+                          Save 35%+ vs monthly, every year
+                        </Text>
+                      </>
                     )}
                   </Pressable>
                   <Pressable
                     style={[styles.upgradeBtn, styles.upgradeBtnSecondary]}
-                    onPress={() => void handleLifetime()}
+                    onPress={() => void handleMonthly()}
                     disabled={purchaseLoading !== null}
                   >
-                    {purchaseLoading === 'lifetime' ? (
+                    {purchaseLoading === 'monthly' ? (
                       <ActivityIndicator color="#FFFFFF" />
                     ) : (
-                      <Text style={styles.upgradeBtnTextSecondary}>
-                        Lifetime — $149.99 one-time
-                      </Text>
+                      <Text style={styles.upgradeBtnTextSecondary}>Monthly — $19.99/month</Text>
                     )}
                   </Pressable>
                   <Pressable
@@ -826,6 +847,32 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     flexWrap: 'wrap',
+  },
+  bestValueBadge: {
+    alignSelf: 'flex-start',
+    marginTop: 14,
+    marginBottom: 6,
+    marginHorizontal: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#0D1117',
+    borderWidth: 1,
+    borderColor: '#00D4AA',
+  },
+  bestValueBadgeText: {
+    color: '#00D4AA',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  upgradeBtnSubText: {
+    color: '#0D1117',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    textAlign: 'center',
+    opacity: 0.85,
   },
   subscriptionHeading: {
     color: '#FFFFFF',
