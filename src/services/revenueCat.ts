@@ -117,16 +117,34 @@ async function purchasePackage(pkg: PurchasesPackage | null | undefined): Promis
   }
 }
 
+export async function fetchOfferings(): Promise<{
+  annual: PurchasesPackage | null;
+  monthly: PurchasesPackage | null;
+}> {
+  try {
+    const offerings = await Purchases.getOfferings();
+    const current = offerings.current;
+    const annual =
+      current?.annual ??
+      current?.availablePackages.find((p) => p.packageType === 'ANNUAL') ??
+      null;
+    const monthly =
+      current?.monthly ??
+      current?.availablePackages.find((p) => p.packageType === 'MONTHLY') ??
+      null;
+    return { annual, monthly };
+  } catch {
+    return { annual: null, monthly: null };
+  }
+}
+
 /**
  * Purchases the monthly subscription from the current RevenueCat offering.
  */
 export async function purchaseMonthlyPro(): Promise<{ success: boolean; error?: string }> {
   try {
-    const offerings = await Purchases.getOfferings();
-    const pkg =
-      offerings.current?.monthly ??
-      offerings.current?.availablePackages.find((p) => p.packageType === 'MONTHLY');
-    return purchasePackage(pkg);
+    const { monthly } = await fetchOfferings();
+    return purchasePackage(monthly);
   } catch (error) {
     return { success: false, error: errorMessage(error) };
   }
@@ -137,11 +155,8 @@ export async function purchaseMonthlyPro(): Promise<{ success: boolean; error?: 
  */
 export async function purchaseAnnualPro(): Promise<{ success: boolean; error?: string }> {
   try {
-    const offerings = await Purchases.getOfferings();
-    const pkg =
-      offerings.current?.annual ??
-      offerings.current?.availablePackages.find((p) => p.packageType === 'ANNUAL');
-    return purchasePackage(pkg);
+    const { annual } = await fetchOfferings();
+    return purchasePackage(annual);
   } catch (error) {
     return { success: false, error: errorMessage(error) };
   }

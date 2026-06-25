@@ -30,6 +30,12 @@ import {
 } from '../store/useSettingsStore';
 import { useTrialStore } from '../store/useTrialStore';
 import TrialCountdownDisplay from '../components/TrialCountdownDisplay';
+import {
+  getAnnualSavingsPercent,
+  getIntroPrice,
+  getRegularPriceString,
+  useOfferings,
+} from '../hooks/useOfferings';
 import type { RootStackParamList } from '../types';
 import {
   purchaseAnnualPro,
@@ -64,6 +70,8 @@ export default function SettingsScreen({ navigation }: Props) {
   const trialStatus = useTrialStore((s) => s.status);
   const { updateSetting } = settings;
   const [purchaseLoading, setPurchaseLoading] = useState<PurchaseAction>(null);
+  const { annualPackage, monthlyPackage, loading: pricesLoading, error: pricesError } =
+    useOfferings();
 
   // Local string buffers for numeric inputs (we keep raw text so backspace etc. feels normal).
   const [riskBuf, setRiskBuf] = useState(String(settings.defaultRiskPercentage));
@@ -187,6 +195,36 @@ export default function SettingsScreen({ navigation }: Props) {
       Alert.alert('Purchase failed', result.error ?? 'Unable to complete purchase.');
     }
   };
+
+  const annualRegular = getRegularPriceString(annualPackage);
+  const annualIntro = getIntroPrice(annualPackage);
+  const monthlyRegular = getRegularPriceString(monthlyPackage);
+  const monthlyIntro = getIntroPrice(monthlyPackage);
+  const savingsPct = getAnnualSavingsPercent(annualPackage, monthlyPackage);
+
+  const annualLabel =
+    annualIntro != null
+      ? `Annual — ${annualIntro.priceString} first year`
+      : annualRegular != null
+        ? `Annual — ${annualRegular}/year`
+        : null;
+
+  const annualSubline =
+    savingsPct != null
+      ? `Save ${savingsPct}% vs monthly, every year`
+      : 'Best value, every year';
+
+  const monthlyLabel =
+    monthlyIntro != null
+      ? `Monthly — ${monthlyIntro.priceString}/mo for first ${monthlyIntro.cycles} months`
+      : monthlyRegular != null
+        ? `Monthly — ${monthlyRegular}/month`
+        : null;
+
+  const annualButtonLabel =
+    pricesError || annualLabel == null ? 'Annual plan' : annualLabel;
+  const monthlyButtonLabel =
+    pricesError || monthlyLabel == null ? 'Monthly plan' : monthlyLabel;
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
@@ -401,12 +439,12 @@ export default function SettingsScreen({ navigation }: Props) {
                   >
                     {purchaseLoading === 'annual' ? (
                       <ActivityIndicator color="#0D1117" />
+                    ) : pricesLoading ? (
+                      <ActivityIndicator color="#0D1117" />
                     ) : (
                       <>
-                        <Text style={styles.upgradeBtnText}>Annual — $99.99 first year</Text>
-                        <Text style={styles.upgradeBtnSubText}>
-                          Save 35%+ vs monthly, every year
-                        </Text>
+                        <Text style={styles.upgradeBtnText}>{annualButtonLabel}</Text>
+                        <Text style={styles.upgradeBtnSubText}>{annualSubline}</Text>
                       </>
                     )}
                   </Pressable>
@@ -417,10 +455,10 @@ export default function SettingsScreen({ navigation }: Props) {
                   >
                     {purchaseLoading === 'monthly' ? (
                       <ActivityIndicator color="#FFFFFF" />
+                    ) : pricesLoading ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
                     ) : (
-                      <Text style={styles.upgradeBtnTextSecondary}>
-                        Monthly — $9.99/mo for first 2 months
-                      </Text>
+                      <Text style={styles.upgradeBtnTextSecondary}>{monthlyButtonLabel}</Text>
                     )}
                   </Pressable>
                   <Pressable
@@ -456,12 +494,12 @@ export default function SettingsScreen({ navigation }: Props) {
                   >
                     {purchaseLoading === 'annual' ? (
                       <ActivityIndicator color="#0D1117" />
+                    ) : pricesLoading ? (
+                      <ActivityIndicator color="#0D1117" />
                     ) : (
                       <>
-                        <Text style={styles.upgradeBtnText}>Annual — $99.99 first year</Text>
-                        <Text style={styles.upgradeBtnSubText}>
-                          Save 35%+ vs monthly, every year
-                        </Text>
+                        <Text style={styles.upgradeBtnText}>{annualButtonLabel}</Text>
+                        <Text style={styles.upgradeBtnSubText}>{annualSubline}</Text>
                       </>
                     )}
                   </Pressable>
@@ -472,8 +510,10 @@ export default function SettingsScreen({ navigation }: Props) {
                   >
                     {purchaseLoading === 'monthly' ? (
                       <ActivityIndicator color="#FFFFFF" />
+                    ) : pricesLoading ? (
+                      <ActivityIndicator color="#FFFFFF" size="small" />
                     ) : (
-                      <Text style={styles.upgradeBtnTextSecondary}>Monthly — $19.99/month</Text>
+                      <Text style={styles.upgradeBtnTextSecondary}>{monthlyButtonLabel}</Text>
                     )}
                   </Pressable>
                   <Pressable
