@@ -144,7 +144,7 @@ export default function LiquidityTrackerScreen({ route }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.screen} edges={['bottom']}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.headerCard}>
         <Text style={styles.headerTitle}>{profile?.firmName ?? 'Liquidity'}</Text>
         <Text style={styles.headerSub}>

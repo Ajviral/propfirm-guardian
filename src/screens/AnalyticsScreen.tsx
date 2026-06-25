@@ -292,7 +292,7 @@ export default function AnalyticsScreen({ route }: Props) {
 
   if (!profile) {
     return (
-      <SafeAreaView style={styles.screen} edges={['bottom']}>
+      <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Profile not found</Text>
           <Text style={styles.emptySub}>This profile may have been deleted.</Text>
@@ -303,7 +303,7 @@ export default function AnalyticsScreen({ route }: Props) {
 
   if (profileTrades.length < 3 || !data) {
     return (
-      <SafeAreaView style={styles.screen} edges={['bottom']}>
+      <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Log at least 3 trades to see your analytics</Text>
           <Text style={styles.emptySub}>Your performance insights will appear here</Text>
@@ -319,7 +319,7 @@ export default function AnalyticsScreen({ route }: Props) {
   const lastTs = sortedAsc[sortedAsc.length - 1].timestamp;
 
   return (
-    <SafeAreaView style={styles.screen} edges={['bottom']}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

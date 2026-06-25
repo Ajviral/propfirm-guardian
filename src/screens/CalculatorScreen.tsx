@@ -204,7 +204,7 @@ export default function CalculatorScreen({ navigation, route }: Props) {
     parsePositive(pipDecimalPlaces) != null;
 
   return (
-    <SafeAreaView style={styles.screen} edges={['bottom']}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -365,8 +365,8 @@ export default function CalculatorScreen({ navigation, route }: Props) {
         {showUpgradeBanner ? (
           <View style={styles.upgradeBanner}>
             <Text style={styles.upgradeBannerText}>
-              ⚠️ Using default instrument specs. Upgrade to Pro for real-time values pulled
-              directly from your MT5 account — zero manual entry.
+              Using default instrument specs. Upgrade to Pro to fetch exact contract specifications
+              for your symbol from your connected account.
             </Text>
             <Pressable
               style={styles.upgradeBannerBtn}
