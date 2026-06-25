@@ -31,7 +31,7 @@ import {
 import { useTrialStore } from '../store/useTrialStore';
 import TrialCountdownDisplay from '../components/TrialCountdownDisplay';
 import {
-  getAnnualSavingsPercent,
+  getAnnualSavings,
   getIntroPrice,
   getRegularPriceString,
   useOfferings,
@@ -200,7 +200,7 @@ export default function SettingsScreen({ navigation }: Props) {
   const annualIntro = getIntroPrice(annualPackage);
   const monthlyRegular = getRegularPriceString(monthlyPackage);
   const monthlyIntro = getIntroPrice(monthlyPackage);
-  const savingsPct = getAnnualSavingsPercent(annualPackage, monthlyPackage);
+  const savings = getAnnualSavings(annualPackage, monthlyPackage);
 
   const annualLabel =
     annualIntro != null
@@ -210,9 +210,11 @@ export default function SettingsScreen({ navigation }: Props) {
         : null;
 
   const annualSubline =
-    savingsPct != null
-      ? `Save ${savingsPct}% vs monthly, every year`
-      : 'Best value, every year';
+    savings == null
+      ? 'Best value, every year'
+      : savings.basis === 'first-year'
+        ? `Save ${savings.percent}% your first year`
+        : `Save ${savings.percent}% every year`;
 
   const monthlyLabel =
     monthlyIntro != null
@@ -426,7 +428,7 @@ export default function SettingsScreen({ navigation }: Props) {
                   <TrialCountdownDisplay color="#00D4AA" fontSize={24} variant="green" />
                   <Text style={styles.subscriptionDesc}>
                     Upgrade to Pro for live trading-account monitoring across MetaTrader 4,
-                    MetaTrader 5, and cTrader, plus push alerts. Save 35%+ with the annual
+                    MetaTrader 5, and cTrader, plus push alerts. Save more with the annual
                     plan.
                   </Text>
                   <View style={styles.bestValueBadge}>

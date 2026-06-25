@@ -12,17 +12,47 @@ export function getIntroPrice(pkg: PurchasesPackage | null): PurchasesIntroPrice
   return pkg?.product?.introPrice ?? null;
 }
 
+export interface AnnualSavings {
+  percent: number;
+  basis: 'first-year' | 'recurring';
+}
+
+export function getAnnualSavings(
+  annual: PurchasesPackage | null,
+  monthly: PurchasesPackage | null,
+): AnnualSavings | null {
+  const annualProduct = annual?.product;
+  const monthlyProduct = monthly?.product;
+  if (!annualProduct || !monthlyProduct) return null;
+
+  const annualRegular = annualProduct.price;
+  const monthlyRegular = monthlyProduct.price;
+  if (annualRegular == null || monthlyRegular == null || monthlyRegular <= 0) return null;
+
+  const annualIntro = annualProduct.introPrice;
+  const monthlyIntro = monthlyProduct.introPrice;
+
+  if (annualIntro != null && monthlyIntro != null) {
+    const annualFirstYear = annualIntro.price;
+    const introCycles = Math.min(monthlyIntro.cycles ?? 0, 12);
+    const monthlyFirstYear =
+      monthlyIntro.price * introCycles + monthlyRegular * (12 - introCycles);
+    if (monthlyFirstYear <= 0) return null;
+    const pct = Math.round(((monthlyFirstYear - annualFirstYear) / monthlyFirstYear) * 100);
+    return pct > 0 ? { percent: pct, basis: 'first-year' } : null;
+  }
+
+  const yearlyIfMonthly = monthlyRegular * 12;
+  if (yearlyIfMonthly <= 0) return null;
+  const pct = Math.round(((yearlyIfMonthly - annualRegular) / yearlyIfMonthly) * 100);
+  return pct > 0 ? { percent: pct, basis: 'recurring' } : null;
+}
+
 export function getAnnualSavingsPercent(
   annual: PurchasesPackage | null,
   monthly: PurchasesPackage | null,
 ): number | null {
-  const a = annual?.product?.price;
-  const m = monthly?.product?.price;
-  if (a == null || m == null || m <= 0) return null;
-  const yearlyIfMonthly = m * 12;
-  if (yearlyIfMonthly <= 0) return null;
-  const pct = Math.round(((yearlyIfMonthly - a) / yearlyIfMonthly) * 100);
-  return pct > 0 ? pct : null;
+  return getAnnualSavings(annual, monthly)?.percent ?? null;
 }
 
 export function useOfferings() {

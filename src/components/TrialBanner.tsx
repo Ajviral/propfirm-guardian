@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -13,6 +13,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
 import TrialCountdownDisplay from './TrialCountdownDisplay';
+import {
+  getAnnualSavings,
+  getIntroPrice,
+  getRegularPriceString,
+  useOfferings,
+} from '../hooks/useOfferings';
 import { useTrialGate } from '../hooks/useTrialGate';
 import {
   purchaseAnnualPro,
@@ -34,13 +40,46 @@ type PurchaseAction = 'monthly' | 'annual' | 'restore' | null;
 export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerProps) {
   const navigation = useNavigation<Nav>();
   const { status, daysRemaining, isExpired, isProOrTrial } = useTrialGate();
-  const expiresAt = useTrialStore((s) => s.expiresAt);
   const continuedWithFree = useTrialStore((s) => s.continuedWithFree);
   const setContinuedWithFree = useTrialStore((s) => s.setContinuedWithFree);
   const [purchaseLoading, setPurchaseLoading] = useState<PurchaseAction>(null);
+  const { annualPackage, monthlyPackage, loading: pricesLoading, error: pricesError } =
+    useOfferings();
 
   const pulse = useRef(new Animated.Value(1)).current;
   const isUrgent = daysRemaining <= 1;
+
+  const annualRegular = getRegularPriceString(annualPackage);
+  const annualIntro = getIntroPrice(annualPackage);
+  const monthlyRegular = getRegularPriceString(monthlyPackage);
+  const monthlyIntro = getIntroPrice(monthlyPackage);
+  const savings = getAnnualSavings(annualPackage, monthlyPackage);
+
+  const annualLabel =
+    annualIntro != null
+      ? `Annual — ${annualIntro.priceString} first year`
+      : annualRegular != null
+        ? `Annual — ${annualRegular}/year`
+        : null;
+
+  const annualSubline =
+    savings == null
+      ? 'Best value, every year'
+      : savings.basis === 'first-year'
+        ? `Save ${savings.percent}% your first year`
+        : `Save ${savings.percent}% every year`;
+
+  const monthlyLabel =
+    monthlyIntro != null
+      ? `Monthly — ${monthlyIntro.priceString}/mo for first ${monthlyIntro.cycles} months`
+      : monthlyRegular != null
+        ? `Monthly — ${monthlyRegular}/month`
+        : null;
+
+  const annualButtonLabel =
+    pricesError || annualLabel == null ? 'Annual plan' : annualLabel;
+  const monthlyButtonLabel =
+    pricesError || monthlyLabel == null ? 'Monthly plan' : monthlyLabel;
 
   useEffect(() => {
     if (!isUrgent) return;
@@ -53,12 +92,6 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
     loop.start();
     return () => loop.stop();
   }, [isUrgent, pulse]);
-
-  const withinDiscountWindow = useMemo(() => {
-    if (!expiresAt) return false;
-    const expiryMs = new Date(expiresAt).getTime();
-    return Date.now() - expiryMs < 24 * 60 * 60 * 1000;
-  }, [expiresAt, isExpired]);
 
   const onUpgrade = () => navigation.navigate('Settings');
 
@@ -108,7 +141,7 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           <TrialCountdownDisplay color="#F6C90E" fontSize={28} variant="amber" />
           <Text style={styles.bannerAmberSub}>
             Subscribe for live monitoring across MetaTrader 4, MetaTrader 5, and cTrader, plus
-            push alerts. Save 35%+ with the annual plan.
+            push alerts. Save more with the annual plan.
           </Text>
           <View style={styles.bestValueBadge}>
             <Text style={styles.bestValueBadgeText}>BEST VALUE</Text>
@@ -120,10 +153,12 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           >
             {purchaseLoading === 'annual' ? (
               <ActivityIndicator color="#0D1117" />
+            ) : pricesLoading ? (
+              <ActivityIndicator color="#0D1117" />
             ) : (
               <>
-                <Text style={styles.bannerGreenBtnText}>Annual — $99.99 first year</Text>
-                <Text style={styles.upgradeBtnSubText}>Save 35%+ vs monthly, every year</Text>
+                <Text style={styles.bannerGreenBtnText}>{annualButtonLabel}</Text>
+                <Text style={styles.upgradeBtnSubText}>{annualSubline}</Text>
               </>
             )}
           </Pressable>
@@ -134,8 +169,10 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
           >
             {purchaseLoading === 'monthly' ? (
               <ActivityIndicator color="#FFFFFF" />
+            ) : pricesLoading ? (
+              <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
-              <Text style={styles.bannerMonthlyBtnText}>Monthly — $9.99/mo for first 2 months</Text>
+              <Text style={styles.bannerMonthlyBtnText}>{monthlyButtonLabel}</Text>
             )}
           </Pressable>
         </Animated.View>
@@ -180,10 +217,12 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
         >
           {purchaseLoading === 'annual' ? (
             <ActivityIndicator color="#0D1117" />
+          ) : pricesLoading ? (
+            <ActivityIndicator color="#0D1117" />
           ) : (
             <>
-              <Text style={styles.overlayPrimaryBtnText}>Annual — $99.99 first year</Text>
-              <Text style={styles.upgradeBtnSubText}>Save 35%+ vs monthly, every year</Text>
+              <Text style={styles.overlayPrimaryBtnText}>{annualButtonLabel}</Text>
+              <Text style={styles.upgradeBtnSubText}>{annualSubline}</Text>
             </>
           )}
         </Pressable>
@@ -194,12 +233,10 @@ export default function TrialBanner({ showExpiryOverlay = false }: TrialBannerPr
         >
           {purchaseLoading === 'monthly' ? (
             <ActivityIndicator color="#FFFFFF" />
+          ) : pricesLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
           ) : (
-            <Text style={styles.overlaySecondaryBtnText}>
-              {withinDiscountWindow
-                ? 'Monthly — $9.99/mo for first 2 months'
-                : 'Monthly — $19.99/month'}
-            </Text>
+            <Text style={styles.overlaySecondaryBtnText}>{monthlyButtonLabel}</Text>
           )}
         </Pressable>
         <Pressable

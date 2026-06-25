@@ -15,6 +15,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useLiveAccount } from '../hooks/useLiveAccount';
+import {
+  getAnnualSavings,
+  getIntroPrice,
+  getRegularPriceString,
+  useOfferings,
+} from '../hooks/useOfferings';
 import { useTrialGate } from '../hooks/useTrialGate';
 import TrialBanner from '../components/TrialBanner';
 import {
@@ -105,6 +111,41 @@ function ProGate({
   onMonthly: () => void;
   onRestore: () => void;
 }) {
+  const { annualPackage, monthlyPackage, loading: pricesLoading, error: pricesError } =
+    useOfferings();
+
+  const annualRegular = getRegularPriceString(annualPackage);
+  const annualIntro = getIntroPrice(annualPackage);
+  const monthlyRegular = getRegularPriceString(monthlyPackage);
+  const monthlyIntro = getIntroPrice(monthlyPackage);
+  const savings = getAnnualSavings(annualPackage, monthlyPackage);
+
+  const annualLabel =
+    annualIntro != null
+      ? `Annual — ${annualIntro.priceString} first year`
+      : annualRegular != null
+        ? `Annual — ${annualRegular}/year`
+        : null;
+
+  const annualSubline =
+    savings == null
+      ? 'Best value, every year'
+      : savings.basis === 'first-year'
+        ? `Save ${savings.percent}% your first year`
+        : `Save ${savings.percent}% every year`;
+
+  const monthlyLabel =
+    monthlyIntro != null
+      ? `Monthly — ${monthlyIntro.priceString}/mo for first ${monthlyIntro.cycles} months`
+      : monthlyRegular != null
+        ? `Monthly — ${monthlyRegular}/month`
+        : null;
+
+  const annualButtonLabel =
+    pricesError || annualLabel == null ? 'Annual plan' : annualLabel;
+  const monthlyButtonLabel =
+    pricesError || monthlyLabel == null ? 'Monthly plan' : monthlyLabel;
+
   return (
     <View style={styles.proGate}>
       <Text style={styles.proIcon}>🛡️</Text>
@@ -129,10 +170,12 @@ function ProGate({
       >
         {purchaseLoading === 'annual' ? (
           <ActivityIndicator color="#0D1117" />
+        ) : pricesLoading ? (
+          <ActivityIndicator color="#0D1117" />
         ) : (
           <>
-            <Text style={styles.upgradeBtnText}>Annual — $99.99 first year</Text>
-            <Text style={styles.upgradeBtnSubText}>Save 35%+ vs monthly, every year</Text>
+            <Text style={styles.upgradeBtnText}>{annualButtonLabel}</Text>
+            <Text style={styles.upgradeBtnSubText}>{annualSubline}</Text>
           </>
         )}
       </Pressable>
@@ -143,8 +186,10 @@ function ProGate({
       >
         {purchaseLoading === 'monthly' ? (
           <ActivityIndicator color="#FFFFFF" />
+        ) : pricesLoading ? (
+          <ActivityIndicator color="#FFFFFF" size="small" />
         ) : (
-          <Text style={styles.upgradeBtnTextSecondary}>Monthly — $19.99/month</Text>
+          <Text style={styles.upgradeBtnTextSecondary}>{monthlyButtonLabel}</Text>
         )}
       </Pressable>
       <Pressable style={styles.restoreLink} onPress={onRestore} disabled={purchaseLoading !== null}>
