@@ -332,6 +332,16 @@ export default function DashboardScreen() {
             <Text style={styles.settingsBtnText}>News</Text>
           </Pressable>
           <Pressable
+            onPress={() =>
+              navigation.navigate('FirmProfile', { profileId: undefined, isEditing: false })
+            }
+            style={({ pressed }) => [styles.settingsBtn, pressed && styles.settingsBtnPressed]}
+            accessibilityRole="button"
+            accessibilityLabel="Add profile"
+          >
+            <Text style={styles.settingsBtnText}>Add</Text>
+          </Pressable>
+          <Pressable
             onPress={() => navigation.navigate('Settings')}
             style={({ pressed }) => [styles.settingsBtn, pressed && styles.settingsBtnPressed]}
             accessibilityRole="button"
@@ -367,7 +377,9 @@ export default function DashboardScreen() {
           <Text style={styles.emptySub}>Add your first prop firm profile to get started</Text>
           <Pressable
             style={({ pressed }) => [styles.emptyCta, pressed && styles.primaryBtnPressed]}
-            onPress={() => navigation.navigate('FirmProfile', { isEditing: false })}
+            onPress={() =>
+              navigation.navigate('FirmProfile', { profileId: undefined, isEditing: false })
+            }
           >
             <Text style={styles.primaryBtnText}>Add Profile</Text>
           </Pressable>

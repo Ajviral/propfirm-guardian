@@ -87,14 +87,51 @@ function applyTemplateToForm(
   }
 }
 
+function resetFormToDefaults(setters: {
+  setFirmName: (s: string) => void;
+  setChallengeName: (s: string) => void;
+  setPlatform: (s: string) => void;
+  setAccountSize: (s: string) => void;
+  setDailyLoss: (s: string) => void;
+  setMaxLoss: (s: string) => void;
+  setProfitTarget: (s: string) => void;
+  setMinDays: (s: string) => void;
+  setDrawdownType: (d: DrawdownType) => void;
+  setCurrentBalance: (s: string) => void;
+  setCurrentEquity: (s: string) => void;
+  setHighestPeak: (s: string) => void;
+  setEodSnapshot: (s: string) => void;
+  setInitialStarting: (s: string) => void;
+  setSelectedTemplate: (t: TemplateKey | null) => void;
+  setTouched: (t: boolean) => void;
+}) {
+  setters.setFirmName('');
+  setters.setChallengeName('');
+  setters.setPlatform('');
+  setters.setAccountSize('');
+  setters.setDailyLoss('');
+  setters.setMaxLoss('');
+  setters.setProfitTarget('');
+  setters.setMinDays('');
+  setters.setDrawdownType(DrawdownType.BALANCE_BASED);
+  setters.setCurrentBalance('');
+  setters.setCurrentEquity('');
+  setters.setHighestPeak('');
+  setters.setEodSnapshot('');
+  setters.setInitialStarting('');
+  setters.setSelectedTemplate(null);
+  setters.setTouched(false);
+}
+
 export default function FirmProfileScreen({ navigation, route }: FirmProfileNavProps) {
   const profiles = useFirmProfileStore((s) => s.profiles);
   const addProfile = useFirmProfileStore((s) => s.addProfile);
   const updateProfile = useFirmProfileStore((s) => s.updateProfile);
   const deleteProfile = useFirmProfileStore((s) => s.deleteProfile);
 
-  const profileId = route.params?.profileId;
-  const isEditing = Boolean(profileId);
+  const routeProfileId = route.params?.profileId;
+  const isEditing = route.params?.isEditing === true && Boolean(routeProfileId);
+  const profileId = isEditing ? routeProfileId : undefined;
   const existing = useMemo(
     () => (profileId ? profiles.find((p) => p.id === profileId) : undefined),
     [profileId, profiles],
@@ -141,15 +178,47 @@ export default function FirmProfileScreen({ navigation, route }: FirmProfileNavP
       setEodSnapshot(String(p.eodSnapshotBalance));
       setInitialStarting(String(p.initialStartingBalance));
       setSelectedTemplate(null);
+      setTouched(false);
     },
     [],
   );
 
+  const resetForm = useCallback(() => {
+    resetFormToDefaults({
+      setFirmName,
+      setChallengeName,
+      setPlatform,
+      setAccountSize,
+      setDailyLoss,
+      setMaxLoss,
+      setProfitTarget,
+      setMinDays,
+      setDrawdownType,
+      setCurrentBalance,
+      setCurrentEquity,
+      setHighestPeak,
+      setEodSnapshot,
+      setInitialStarting,
+      setSelectedTemplate,
+      setTouched,
+    });
+  }, []);
+
   useEffect(() => {
-    if (isEditing && existing) {
+    if (route.params?.isEditing !== true && route.params?.profileId != null) {
+      navigation.setParams({ profileId: undefined });
+    }
+  }, [navigation, route.params?.isEditing, route.params?.profileId]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      resetForm();
+      return;
+    }
+    if (existing) {
       loadFromProfile(existing);
     }
-  }, [isEditing, existing, loadFromProfile]);
+  }, [isEditing, profileId, existing, loadFromProfile, resetForm]);
 
   const showFundedTiers = selectedTemplate === 'FUNDED_NEXT_STELLAR_1_STEP';
 
