@@ -143,6 +143,29 @@ export default function ProfileToolsScreen({ navigation, route }: Props) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        {profiles.length > 1 ? (
+          <View style={styles.profileSwitcher}>
+            <Text style={styles.chipSectionLabel}>Profile:</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.chipRow}
+            >
+              {profiles.map((p) => (
+                <Pressable
+                  key={p.id}
+                  style={[styles.chip, profileId === p.id && styles.chipActive]}
+                  onPress={() => navigation.setParams({ profileId: p.id })}
+                >
+                  <Text style={[styles.chipText, profileId === p.id && styles.chipTextActive]}>
+                    {p.challengeName ? `${p.firmName} · ${p.challengeName}` : p.firmName}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+          </View>
+        ) : null}
+
         <View style={styles.sectionBody}>
           {TOOL_ROWS.map((tool, index) => (
             <React.Fragment key={tool.key}>
@@ -203,6 +226,28 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
+  profileSwitcher: {
+    marginBottom: 12,
+  },
+  chipSectionLabel: {
+    color: '#A0AEC0',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  chipRow: { marginVertical: 0 },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#1A202C',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#30363D',
+  },
+  chipActive: { borderColor: '#00D4AA', backgroundColor: '#0D1117' },
+  chipText: { color: '#A0AEC0', fontSize: 13, fontWeight: '600' },
+  chipTextActive: { color: '#00D4AA' },
   sectionBody: {
     backgroundColor: '#161B22',
     borderRadius: 12,

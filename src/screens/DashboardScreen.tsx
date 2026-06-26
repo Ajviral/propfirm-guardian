@@ -285,10 +285,7 @@ export default function DashboardScreen() {
     showLiveFeatures &&
     connections.some((c) => c.status === 'connected');
 
-  const activeProfiles = useMemo(
-    () => profiles.filter((p) => p.isActive),
-    [profiles],
-  );
+  const activeProfiles = useMemo(() => profiles, [profiles]);
 
   const aggregate = useMemo(() => {
     let totalCapital = 0;
@@ -366,7 +363,7 @@ export default function DashboardScreen() {
           <Text style={styles.emptyIcon} accessibilityLabel="Shield icon">
             🛡️
           </Text>
-          <Text style={styles.emptyTitle}>No Active Challenges</Text>
+          <Text style={styles.emptyTitle}>No Challenges Yet</Text>
           <Text style={styles.emptySub}>Add your first prop firm profile to get started</Text>
           <Pressable
             style={({ pressed }) => [styles.emptyCta, pressed && styles.primaryBtnPressed]}
