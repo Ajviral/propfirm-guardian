@@ -95,6 +95,7 @@ export type RootStackParamList = {
   };
   Analytics: { profileId: string };
   LiquidityTracker: { profileId: string };
+  ProfileTools: { profileId: string };
   Settings: undefined;
   AlertSettings: undefined;
   NewsCalendar: undefined;

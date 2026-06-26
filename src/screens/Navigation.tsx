@@ -22,6 +22,7 @@ import FirmProfileScreen from './FirmProfileScreen';
 import JournalScreen from './JournalScreen';
 import AnalyticsScreen from './AnalyticsScreen';
 import LiquidityTrackerScreen from './LiquidityTrackerScreen';
+import ProfileToolsScreen from './ProfileToolsScreen';
 import NewsCalendarScreen from './NewsCalendarScreen';
 import LiveConnectionScreen from './LiveConnectionScreen';
 import AlertSettingsScreen from './AlertSettingsScreen';
@@ -197,6 +198,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Journal" component={JournalScreen} />
       <Stack.Screen name="Analytics" component={AnalyticsScreen} />
       <Stack.Screen name="LiquidityTracker" component={LiquidityTrackerScreen} />
+      <Stack.Screen name="ProfileTools" component={ProfileToolsScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="AlertSettings" component={AlertSettingsScreen} />
       <Stack.Screen name="NewsCalendar" component={NewsCalendarScreen} />

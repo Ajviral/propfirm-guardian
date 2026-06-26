@@ -179,6 +179,7 @@ export interface ProfileCardProps {
   profile: FirmProfile;
   onPress: () => void;
   onCalculatorPress: () => void;
+  onToolsPress: () => void;
   showLiveStatus?: boolean;
 }
 
@@ -209,6 +210,7 @@ export function ProfileCard({
   profile,
   onPress,
   onCalculatorPress,
+  onToolsPress,
   showLiveStatus = true,
 }: ProfileCardProps) {
   const m = computeProfileMetrics(profile);
@@ -260,6 +262,13 @@ export function ProfileCard({
           <Text style={styles.secondaryBtnText}>View Details</Text>
         </Pressable>
       </View>
+      <Pressable
+        style={({ pressed }) => [styles.toolsBtn, pressed && styles.secondaryBtnPressed]}
+        onPress={onToolsPress}
+      >
+        <Text style={styles.toolsBtnText}>Trading Tools</Text>
+        <Text style={styles.toolsBtnChevron}>›</Text>
+      </Pressable>
 
       {liveConnection ? <LiveStatusBar connection={liveConnection} /> : null}
     </View>
@@ -382,6 +391,9 @@ export default function DashboardScreen() {
               }
               onCalculatorPress={() =>
                 navigation.navigate('Calculator', { profileId: profile.id })
+              }
+              onToolsPress={() =>
+                navigation.navigate('ProfileTools', { profileId: profile.id })
               }
             />
           ))}
@@ -634,6 +646,29 @@ const styles = StyleSheet.create({
   cardActions: {
     flexDirection: 'row',
     gap: 10,
+  },
+  toolsBtn: {
+    marginTop: 10,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#30363D',
+    backgroundColor: 'transparent',
+  },
+  toolsBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 15,
+  },
+  toolsBtnChevron: {
+    color: '#A0AEC0',
+    fontSize: 18,
+    marginTop: -1,
   },
   primaryBtn: {
     flex: 1,

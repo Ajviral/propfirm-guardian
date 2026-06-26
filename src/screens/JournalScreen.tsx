@@ -16,6 +16,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { APP_CONFIG, SETUP_TAGS } from '../constants';
 import { INSTRUMENTS } from '../constants/calculatorInstruments';
+import { useTrialGate } from '../hooks/useTrialGate';
 import { useFirmProfileStore } from '../store/useFirmProfileStore';
 import { useJournalStore } from '../store/useJournalStore';
 import type { RootStackParamList, TradeEntry } from '../types';
@@ -74,6 +75,7 @@ export default function JournalScreen({ navigation, route }: Props) {
   const trades = useJournalStore((s) => s.trades);
   const addTrade = useJournalStore((s) => s.addTrade);
   const deleteTrade = useJournalStore((s) => s.deleteTrade);
+  const { isProOrTrial } = useTrialGate();
 
   const profileTrades = useMemo(
     () =>
@@ -82,6 +84,18 @@ export default function JournalScreen({ navigation, route }: Props) {
         .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1)),
     [trades, profileId],
   );
+
+  const limitApplies = !isProOrTrial;
+  const reachedLimit =
+    limitApplies && profileTrades.length >= APP_CONFIG.freeTradingJournalLimit;
+
+  const showJournalLimitAlert = () => {
+    Alert.alert(
+      'Free tier limit reached',
+      `You can log up to ${APP_CONFIG.freeTradingJournalLimit} trades per profile on the free tier. Upgrade to log unlimited trades.`,
+      [{ text: 'OK' }],
+    );
+  };
 
   const [filter, setFilter] = useState<FilterTab>('ALL');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -126,12 +140,8 @@ export default function JournalScreen({ navigation, route }: Props) {
   }, [profileTrades]);
 
   const openForm = () => {
-    if (profileTrades.length >= APP_CONFIG.freeTradingJournalLimit) {
-      Alert.alert(
-        'Free tier limit reached',
-        `You can log up to ${APP_CONFIG.freeTradingJournalLimit} trades per profile on the free tier. Upgrade to log unlimited trades.`,
-        [{ text: 'OK' }],
-      );
+    if (limitApplies && profileTrades.length >= APP_CONFIG.freeTradingJournalLimit) {
+      showJournalLimitAlert();
       return;
     }
     setFormOpen(true);
@@ -139,18 +149,25 @@ export default function JournalScreen({ navigation, route }: Props) {
 
   // Auto-open the form when navigated in with calculator prefill.
   useEffect(() => {
-    if (route.params.calculatorPrefill) {
-      setFormOpen(true);
+    if (!route.params.calculatorPrefill) return;
+    if (limitApplies && profileTrades.length >= APP_CONFIG.freeTradingJournalLimit) {
+      showJournalLimitAlert();
+      return;
     }
-  }, [route.params.calculatorPrefill]);
+    setFormOpen(true);
+  }, [route.params.calculatorPrefill, limitApplies, profileTrades.length]);
 
   const handleSave = useCallback(
     (newTrade: TradeEntry) => {
+      if (limitApplies && profileTrades.length >= APP_CONFIG.freeTradingJournalLimit) {
+        showJournalLimitAlert();
+        return;
+      }
       addTrade(newTrade);
       setFormOpen(false);
       navigation.setParams({ calculatorPrefill: undefined });
     },
-    [addTrade, navigation],
+    [addTrade, navigation, limitApplies, profileTrades.length],
   );
 
   const confirmDelete = (id: string) => {
@@ -169,8 +186,6 @@ export default function JournalScreen({ navigation, route }: Props) {
 
   const headerTitle = profile ? profile.firmName : 'Journal';
   const headerSub = profile ? profile.challengeName : 'Profile not found';
-
-  const reachedLimit = profileTrades.length >= APP_CONFIG.freeTradingJournalLimit;
 
   return (
     <SafeAreaView style={styles.screen} edges={['bottom']}>
