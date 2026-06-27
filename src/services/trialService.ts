@@ -6,9 +6,9 @@ import { generateFingerprint } from '../utils/deviceFingerprint';
 
 export const TRIAL_DURATION_DAYS = 7;
 
-/** Railway API base URL — constant only; no network I/O at module load. */
+/** Render API base URL — constant only; no network I/O at module load. */
 export const SERVER_URL =
-  'https://propfirm-guardian-server-production.up.railway.app';
+  'https://propfirm-guardian-server.onrender.com';
 
 export interface TrialStatus {
   status: 'new' | 'active' | 'expired' | 'pro';

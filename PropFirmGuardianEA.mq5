@@ -35,7 +35,7 @@
 #property version   "1.01"
 
 //--- Inputs
-input string ServerURL = "https://propfirm-guardian-server-production.up.railway.app";
+input string ServerURL = "https://propfirm-guardian-server.onrender.com";
 input string AccountToken = "";
 input int PushIntervalSecs = 5;
 input bool EnableLogging = false;

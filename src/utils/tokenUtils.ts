@@ -1,10 +1,10 @@
-/** Public Railway deployment used by the mobile app and MT5 EA. */
+/** Public Render deployment used by the mobile app and MT5 EA. */
 export const LIVE_SERVER_HTTPS =
-  'https://propfirm-guardian-server-production.up.railway.app';
+  'https://propfirm-guardian-server.onrender.com';
 
 /** WebSocket endpoint on the same host as {@link LIVE_SERVER_HTTPS}. */
 export const LIVE_SERVER_WSS =
-  'wss://propfirm-guardian-server-production.up.railway.app';
+  'wss://propfirm-guardian-server.onrender.com';
 
 /**
  * Generates a UUID v4 token (lowercase) without external dependencies.

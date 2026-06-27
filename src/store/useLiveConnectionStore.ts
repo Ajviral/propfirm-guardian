@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { LIVE_SERVER_HTTPS } from '../utils/tokenUtils';
+
 /** Live snapshot pushed from the MT5 EA via the Railway backend. */
 export interface LivePosition {
   ticket: number;
@@ -54,8 +56,22 @@ export interface LiveConnection {
 
 type StoredLiveConnection = Omit<LiveConnection, 'platform'> & { platform?: TradingPlatform };
 
+function migrateServerUrl(url: string | undefined): string {
+  if (typeof url !== 'string' || url.trim() === '') {
+    return LIVE_SERVER_HTTPS;
+  }
+  return url.replace(
+    'propfirm-guardian-server-production.up.railway.app',
+    'propfirm-guardian-server.onrender.com',
+  );
+}
+
 function normalizeConnection(connection: StoredLiveConnection): LiveConnection {
-  return { ...connection, platform: connection.platform ?? 'mt5' };
+  return {
+    ...connection,
+    platform: connection.platform ?? 'mt5',
+    serverUrl: migrateServerUrl(connection.serverUrl),
+  };
 }
 
 export interface LiveConnectionStore {
