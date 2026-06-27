@@ -13,7 +13,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { INSTRUMENTS } from '../constants/calculatorInstruments';
@@ -77,6 +77,7 @@ function parseNum(raw: string): number | null {
 }
 
 export default function LiquidityTrackerScreen({ route }: Props) {
+  const insets = useSafeAreaInsets();
   const profileId = route.params.profileId;
   const profile = useFirmProfileStore((s) =>
     s.profiles.find((p) => p.id === profileId) ?? null,
@@ -212,7 +213,7 @@ export default function LiquidityTrackerScreen({ route }: Props) {
       )}
 
       <Pressable
-        style={styles.fab}
+        style={[styles.fab, { bottom: 24 + insets.bottom }]}
         onPress={() => setFormOpen(true)}
         accessibilityRole="button"
         accessibilityLabel="Add liquidity level"

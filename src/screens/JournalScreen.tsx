@@ -11,7 +11,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { APP_CONFIG, SETUP_TAGS } from '../constants';
@@ -67,6 +67,7 @@ function parseNum(raw: string): number | null {
 }
 
 export default function JournalScreen({ navigation, route }: Props) {
+  const insets = useSafeAreaInsets();
   const profileId = route.params.profileId;
   const profile = useFirmProfileStore((s) =>
     s.profiles.find((p) => p.id === profileId) ?? null,
@@ -188,7 +189,7 @@ export default function JournalScreen({ navigation, route }: Props) {
   const headerSub = profile ? profile.challengeName : 'Profile not found';
 
   return (
-    <SafeAreaView style={styles.screen} edges={['bottom']}>
+    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
       <View style={styles.headerCard}>
         <View>
           <Text style={styles.headerTitle}>{headerTitle}</Text>
@@ -267,7 +268,7 @@ export default function JournalScreen({ navigation, route }: Props) {
       )}
 
       <Pressable
-        style={styles.fab}
+        style={[styles.fab, { bottom: 24 + insets.bottom }]}
         onPress={openForm}
         accessibilityLabel="Add trade"
         accessibilityRole="button"

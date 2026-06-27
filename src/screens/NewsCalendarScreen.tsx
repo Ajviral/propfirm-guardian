@@ -12,7 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { RECURRING_NEWS_EVENTS, type RecurringNewsEvent } from '../constants/newsEvents';
 import { useNewsStore } from '../store/useNewsStore';
@@ -157,6 +157,7 @@ const swipeStyles = StyleSheet.create({
 // --- Main Screen Component --------------------------------------------------
 
 export default function NewsCalendarScreen() {
+  const insets = useSafeAreaInsets();
   const {
     manualNewsEvents,
     newsBlackoutActive,
@@ -303,7 +304,11 @@ export default function NewsCalendarScreen() {
 
       {/* Section 3: Floating Action Button */}
       <Pressable
-        style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
+        style={({ pressed }) => [
+          styles.fab,
+          { bottom: 24 + insets.bottom },
+          pressed && styles.fabPressed,
+        ]}
         onPress={() => setModalVisible(true)}
         accessibilityRole="button"
         accessibilityLabel="Add manual event"
