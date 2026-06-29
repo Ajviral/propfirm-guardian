@@ -1,8 +1,16 @@
 //+------------------------------------------------------------------+
 //| PropFirmGuardianEA.mq5                                           |
 //| PropFirm Guardian — MT5 account sync Expert Advisor              |
-//| Version 1.02                                                     |
+//| Version 1.03                                                     |
 //+------------------------------------------------------------------+
+//
+// CHANGELOG v1.03
+// ---------------
+// FIX 1: No-SL local Alert fires exactly once per breach episode
+//        (alertSent set before Alert; fixed message; reliable ticket
+//        cleanup via IsTicketOpen).
+// FIX 2: NoStopLossMinutes is an enum dropdown (1–5 minutes).
+// FIX 3: Standalone empty-token log wording neutralized (no "server push").
 //
 // CHANGELOG v1.02
 // ---------------
@@ -44,16 +52,26 @@
 //+------------------------------------------------------------------+
 #property copyright "PropFirm Guardian"
 #property link      "https://propfirmguardian.com"
-#property version   "1.02"
+#property version   "1.03"
 
 //--- Internal constants (not shown on the EA inputs panel)
 const string SERVER_URL          = "https://propfirm-guardian-server.onrender.com";
 const int    PUSH_INTERVAL_SECS  = 5;
 
+//--- No-stop-loss interval (dropdown: 1–5 minutes)
+enum ENUM_NOSL_MINUTES
+{
+   NOSL_1MIN = 1,   // 1 minute
+   NOSL_2MIN = 2,   // 2 minutes
+   NOSL_3MIN = 3,   // 3 minutes
+   NOSL_4MIN = 4,   // 4 minutes
+   NOSL_5MIN = 5    // 5 minutes
+};
+
 //--- Inputs
-input string AccountToken      = "";
-input int    NoStopLossMinutes = 2;   // No-stop-loss alert interval (minutes), range 1-5
-input bool   EnableLogging     = false;
+input string            AccountToken      = "";
+input ENUM_NOSL_MINUTES NoStopLossMinutes = NOSL_2MIN;  // No-stop-loss alert interval
+input bool              EnableLogging     = false;
 
 //--- No-stop-loss tracking (per open position ticket)
 struct NoSlState
@@ -170,13 +188,27 @@ void RemoveNoSlStateAt(const int index)
 }
 
 //+------------------------------------------------------------------+
+//| True if ticket still appears in the open positions list.         |
+//+------------------------------------------------------------------+
+bool IsTicketOpen(const ulong ticket)
+{
+   int total = PositionsTotal();
+   for(int i = 0; i < total; i++)
+   {
+      if(PositionGetTicket(i) == ticket)
+         return true;
+   }
+   return false;
+}
+
+//+------------------------------------------------------------------+
 //| Drop tracking rows for positions that are no longer open.         |
 //+------------------------------------------------------------------+
 void CleanupNoSlStates()
 {
    for(int i = ArraySize(g_noSlStates) - 1; i >= 0; i--)
    {
-      if(!PositionSelectByTicket(g_noSlStates[i].ticket))
+      if(!IsTicketOpen(g_noSlStates[i].ticket))
          RemoveNoSlStateAt(i);
    }
 }
@@ -225,14 +257,8 @@ void EvaluateNoStopLoss(
 
       if(!g_noSlStates[idx].alertSent)
       {
-         Alert(
-            "PropFirm Guardian: ",
-            symbol,
-            " has NO stop loss after ",
-            IntegerToString(g_noStopLossMinutes),
-            " min"
-         );
          g_noSlStates[idx].alertSent = true;
+         Alert("PropFirm Guardian: ", symbol, " has NO stop loss");
       }
    }
 }
@@ -312,7 +338,7 @@ bool PushAccountData()
 
    if(StringLen(AccountToken) == 0)
    {
-      LogMessage("AccountToken is empty — skipping server push (no-SL checks still ran).");
+      LogMessage("Standalone mode — no-stop-loss monitoring active.");
       return false;
    }
 
@@ -416,14 +442,10 @@ bool SendToServer(const string jsonBody)
 //+------------------------------------------------------------------+
 int OnInit()
 {
-   g_noStopLossMinutes = NoStopLossMinutes;
-   if(g_noStopLossMinutes < 1)
-      g_noStopLossMinutes = 1;
-   if(g_noStopLossMinutes > 5)
-      g_noStopLossMinutes = 5;
+   g_noStopLossMinutes = (int)NoStopLossMinutes;
 
    if(StringLen(AccountToken) == 0)
-      Alert("PropFirmGuardianEA: AccountToken is empty. Set it in EA inputs.");
+      LogMessage("Standalone mode — no-stop-loss monitoring active.");
 
    if(!EventSetTimer(PUSH_INTERVAL_SECS))
    {
