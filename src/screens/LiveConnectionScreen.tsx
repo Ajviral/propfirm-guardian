@@ -22,6 +22,7 @@ import {
   purchaseAnnualPro,
   purchaseMonthlyPro,
   registerConnectionToken,
+  registerConnectionThresholds,
   restorePurchases,
 } from '../services/revenueCat';
 import { useFirmProfileStore } from '../store/useFirmProfileStore';
@@ -206,6 +207,7 @@ export default function LiveConnectionScreen() {
     }
 
     const token = generateAccountToken();
+    const linkedProfile = profiles.find((p) => p.id === profileId);
     addConnection({
       token,
       label: label.trim(),
@@ -220,7 +222,10 @@ export default function LiveConnectionScreen() {
     setSetupToken(token);
     setCopied(false);
     void registerConnectionToken(token);
-  }, [label, profileId, platform, addConnection]);
+    if (linkedProfile) {
+      void registerConnectionThresholds(token, platform, linkedProfile);
+    }
+  }, [label, profileId, platform, profiles, addConnection]);
 
   const handleRestore = useCallback(async () => {
     setPurchaseLoading('restore');

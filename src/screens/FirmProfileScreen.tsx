@@ -16,7 +16,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { DrawdownType } from '../calculators/RiskCalculator';
 import { DRAWDOWN_DESCRIPTIONS } from '../constants';
+import { registerConnectionThresholds } from '../services/revenueCat';
 import { FIRM_TEMPLATES, useFirmProfileStore } from '../store/useFirmProfileStore';
+import { useLiveConnectionStore } from '../store/useLiveConnectionStore';
 import type { FirmProfile, RootStackParamList } from '../types';
 import { formatCurrency, generateUniqueId, calculateDailyLossLimit, calculateMaxLossLimit } from '../utils';
 
@@ -318,6 +320,18 @@ export default function FirmProfileScreen({ navigation, route }: FirmProfileNavP
         id: profileId,
         createdAt: created,
       });
+
+      const linkedConnections = useLiveConnectionStore
+        .getState()
+        .connections.filter((c) => c.profileId === profileId);
+      for (const conn of linkedConnections) {
+        void registerConnectionThresholds(conn.token, conn.platform, {
+          ...payload,
+          id: profileId,
+          createdAt: created,
+        });
+      }
+
       Alert.alert('Profile saved', 'Your firm profile was updated successfully.', [
         { text: 'OK', onPress: () => navigation.navigate('Dashboard') },
       ]);

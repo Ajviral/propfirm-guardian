@@ -7,6 +7,7 @@ import Purchases, {
 } from 'react-native-purchases';
 
 import { useSettingsStore } from '../store/useSettingsStore';
+import type { FirmProfile } from '../types';
 import { LIVE_SERVER_HTTPS } from '../utils/tokenUtils';
 
 const REVENUECAT_API_KEY = __DEV__
@@ -198,5 +199,42 @@ export async function registerConnectionToken(token: string): Promise<void> {
     }
   } catch (err) {
     console.warn('[Live] register-token error:', err);
+  }
+}
+
+/**
+ * Syncs a connection's FirmProfile risk thresholds to the backend.
+ * Failures are logged only — never blocks the UI.
+ */
+export async function registerConnectionThresholds(
+  token: string,
+  tradingPlatform: string,
+  profile: FirmProfile,
+): Promise<void> {
+  try {
+    const res = await fetch(`${LIVE_SERVER_HTTPS}/api/register-thresholds`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token,
+        profileId: profile.id,
+        tradingPlatform,
+        accountSize: profile.accountSize,
+        dailyLossLimitPercent: profile.dailyLossLimitPercent,
+        maxLossLimitPercent: profile.maxLossLimitPercent,
+        drawdownType: profile.drawdownType,
+        profitTargetPercent: profile.profitTargetPercent,
+        initialStartingBalance: profile.initialStartingBalance,
+        highestEquityPeak: profile.highestEquityPeak,
+        eodSnapshotBalance: profile.eodSnapshotBalance,
+        allTimeHighBalance: profile.allTimeHighBalance,
+      }),
+    });
+
+    if (!res.ok) {
+      console.warn('[Live] register-thresholds failed:', res.status);
+    }
+  } catch (err) {
+    console.warn('[Live] register-thresholds error:', err);
   }
 }
