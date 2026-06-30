@@ -8,6 +8,7 @@ import Purchases, {
 
 import { useSettingsStore } from '../store/useSettingsStore';
 import type { FirmProfile } from '../types';
+import { getAndRegisterPushToken } from './notifications';
 import { LIVE_SERVER_HTTPS } from '../utils/tokenUtils';
 
 const REVENUECAT_API_KEY = __DEV__
@@ -183,15 +184,27 @@ export async function registerConnectionToken(token: string): Promise<void> {
   try {
     const customerInfo = await Purchases.getCustomerInfo();
     const revenueCatUserId = customerInfo.originalAppUserId;
+    const expoPushToken = await getAndRegisterPushToken();
+
+    const body: {
+      token: string;
+      revenueCatUserId: string;
+      platform: string;
+      expoPushToken?: string;
+    } = {
+      token,
+      revenueCatUserId,
+      platform: Platform.OS === 'ios' ? 'ios' : 'android',
+    };
+
+    if (expoPushToken) {
+      body.expoPushToken = expoPushToken;
+    }
 
     const res = await fetch(`${LIVE_SERVER_HTTPS}/api/register-token`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token,
-        revenueCatUserId,
-        platform: Platform.OS === 'ios' ? 'ios' : 'android',
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!res.ok) {

@@ -1,4 +1,5 @@
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 import type { LiveAccountData } from '../store/useLiveConnectionStore';
@@ -55,6 +56,36 @@ export async function requestNotificationPermissions(): Promise<boolean> {
 
   const { status } = await Notifications.requestPermissionsAsync();
   return status === 'granted';
+}
+
+const EAS_PROJECT_ID_FALLBACK = 'b7310a70-0c26-465d-b1eb-8e0fdeaa8c44';
+
+function getEasProjectId(): string {
+  const fromConfig = Constants.expoConfig?.extra?.eas?.projectId;
+  if (typeof fromConfig === 'string' && fromConfig.length > 0) {
+    return fromConfig;
+  }
+  return EAS_PROJECT_ID_FALLBACK;
+}
+
+/**
+ * Obtains the device Expo push token when notification permission is granted.
+ * Returns null on denial, Expo Go, simulators, or any failure — never throws.
+ */
+export async function getAndRegisterPushToken(): Promise<string | null> {
+  try {
+    const granted = await requestNotificationPermissions();
+    if (!granted) {
+      return null;
+    }
+
+    const projectId = getEasProjectId();
+    const pushToken = await Notifications.getExpoPushTokenAsync({ projectId });
+    return pushToken.data ?? null;
+  } catch (err) {
+    console.warn('[Notifications] getExpoPushToken failed:', err);
+    return null;
+  }
 }
 
 export async function scheduleDrawdownAlert(params: {
