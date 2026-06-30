@@ -1,8 +1,16 @@
 //+------------------------------------------------------------------+
 //| PropFirmGuardianEA.mq5                                           |
 //| PropFirm Guardian — MT5 account sync Expert Advisor              |
-//| Version 1.03                                                     |
+//| Version 1.04                                                     |
 //+------------------------------------------------------------------+
+//
+// CHANGELOG v1.04
+// ---------------
+// CHG 1: NoStopLossMinutes enum adds NOSL_OFF (0); default NOSL_2MIN.
+// CHG 2: When interval is 0, local no-SL Alert is disabled entirely.
+// CHG 3: Removed noStopLossAlert / noStopLossBreached from JSON payload
+//        (app computes breach from raw position data).
+// CHG 4: Removed temporary LogFullPayload debug logging.
 //
 // CHANGELOG v1.03
 // ---------------
@@ -52,15 +60,16 @@
 //+------------------------------------------------------------------+
 #property copyright "PropFirm Guardian"
 #property link      "https://propfirmguardian.com"
-#property version   "1.03"
+#property version   "1.04"
 
 //--- Internal constants (not shown on the EA inputs panel)
 const string SERVER_URL          = "https://propfirm-guardian-server.onrender.com";
 const int    PUSH_INTERVAL_SECS  = 5;
 
-//--- No-stop-loss interval (dropdown: 1–5 minutes)
+//--- No-stop-loss interval (dropdown: off, 1–5 minutes)
 enum ENUM_NOSL_MINUTES
 {
+   NOSL_OFF  = 0,   // Off
    NOSL_1MIN = 1,   // 1 minute
    NOSL_2MIN = 2,   // 2 minutes
    NOSL_3MIN = 3,   // 3 minutes
@@ -70,7 +79,7 @@ enum ENUM_NOSL_MINUTES
 
 //--- Inputs
 input string            AccountToken      = "";
-input ENUM_NOSL_MINUTES NoStopLossMinutes = NOSL_2MIN;  // No-stop-loss alert interval
+input ENUM_NOSL_MINUTES NoStopLossMinutes = NOSL_2MIN;  // EA local no-stop-loss alert (minutes); 0 = off
 input bool              EnableLogging     = false;
 
 //--- No-stop-loss tracking (per open position ticket)
@@ -227,6 +236,9 @@ void EvaluateNoStopLoss(
    hasStopLoss = (sl != 0.0);
    noStopLossBreached = false;
 
+   if(g_noStopLossMinutes == 0)
+      return;
+
    if(hasStopLoss)
    {
       int idx = FindNoSlStateIndex(ticket);
@@ -270,9 +282,9 @@ void EvaluateNoStopLoss(
 //+------------------------------------------------------------------+
 bool PushAccountData()
 {
-   CleanupNoSlStates();
+   if(g_noStopLossMinutes > 0)
+      CleanupNoSlStates();
 
-   bool accountNoStopLossAlert = false;
    string positionsJson = "[";
    bool firstPosition = true;
 
@@ -298,10 +310,10 @@ bool PushAccountData()
 
       bool hasStopLoss = false;
       bool noStopLossBreached = false;
-      EvaluateNoStopLoss(ticket, sl, symbol, hasStopLoss, noStopLossBreached);
-
-      if(noStopLossBreached)
-         accountNoStopLossAlert = true;
+      if(g_noStopLossMinutes > 0)
+         EvaluateNoStopLoss(ticket, sl, symbol, hasStopLoss, noStopLossBreached);
+      else
+         hasStopLoss = (sl != 0.0);
 
       int priceDigits = (int)SymbolInfoInteger(symbol, SYMBOL_DIGITS);
       int volDigits   = VolumeDigits(symbol);
@@ -329,8 +341,7 @@ bool PushAccountData()
       positionsJson += "\"profit\":"            + DoubleToString(posProfit, 2)           + ",";
       positionsJson += "\"openTime\":"          + IntegerToString((long)openTime)        + ",";
       positionsJson += "\"hasStopLoss\":"       + JsonBool(hasStopLoss)                  + ",";
-      positionsJson += "\"currentPrice\":"      + DoubleToString(currentPrice, priceDigits) + ",";
-      positionsJson += "\"noStopLossBreached\":" + JsonBool(noStopLossBreached);
+      positionsJson += "\"currentPrice\":"      + DoubleToString(currentPrice, priceDigits);
       positionsJson += "}";
    }
 
@@ -372,7 +383,6 @@ bool PushAccountData()
    json += "\"profit\":"             + DoubleToString(profit, 2)      + ",";
    json += "\"leverage\":"           + IntegerToString(leverage)      + ",";
    json += "\"marginLevel\":"        + DoubleToString(marginLevel, 2) + ",";
-   json += "\"noStopLossAlert\":"    + JsonBool(accountNoStopLossAlert) + ",";
    json += "\"positions\":"          + positionsJson;
    json += "}";
 
@@ -456,7 +466,8 @@ int OnInit()
 
    LogMessage(
       "EA initialized. Push interval: " + IntegerToString(PUSH_INTERVAL_SECS) +
-      "s | No-SL interval: " + IntegerToString(g_noStopLossMinutes) + " min"
+      "s | No-SL local alert: " +
+      (g_noStopLossMinutes == 0 ? "off" : IntegerToString(g_noStopLossMinutes) + " min")
    );
 
    PushAccountData();
